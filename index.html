@@ -3,239 +3,288 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バーコードバトラー</title>
+<title>バーコードコロシアム</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  color: white;
-  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+body{
+  font-family:sans-serif;
+  text-align:center;
+  color:white;
+  background:#111;
 }
 
-button {
-  padding: 10px 15px;
-  margin: 5px;
-  border-radius: 20px;
-  border: none;
-  background: linear-gradient(45deg,#ff6a00,#ee0979);
-  color: white;
+/* キャラ枠 */
+.char{
+  border:4px solid white;
+  border-radius:15px;
+  padding:10px;
+  margin:10px;
 }
 
-.char {
-  border-radius: 15px;
-  padding: 10px;
-  margin: 10px;
-  position: relative;
+/* レア度 */
+.common{ border-color:#cd7f32; box-shadow:0 0 10px #cd7f32;}
+.rare{ border-color:silver; box-shadow:0 0 12px silver;}
+.ssr{
+  border-color:gold;
+  box-shadow:0 0 20px gold;
+  animation: glow 1s infinite alternate;
+}
+@keyframes glow{
+  from{box-shadow:0 0 10px gold;}
+  to{box-shadow:0 0 25px gold;}
 }
 
-.hpbar {
-  height: 10px;
-  background: lime;
-  border-radius: 5px;
+/* HPバー */
+.hpWrap{
+  background:#444;
+  height:10px;
+  position:relative;
+}
+.hpLost{
+  background:red;
+  height:10px;
+  position:absolute;
+}
+.hpNow{
+  background:lime;
+  height:10px;
 }
 
-#reader { width:300px; margin:auto; }
+/* SSR演出 */
+#ssrEffect{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:40px;
+  background:radial-gradient(gold,black);
+  z-index:999;
+}
+
+/* 横画面 */
+@media (orientation:landscape){
+  #chars{display:flex;}
+}
 </style>
 </head>
 
 <body>
 
+<h1>🔥 バーコードコロシアム</h1>
+
 <!-- タイトル -->
 <div id="title">
-  <h1>🔥 バーコードバトラー</h1>
-  <button onclick="startGame()">ゲーム開始</button>
+  <button onclick="startPVP()">プレイヤー対戦</button>
+  <button onclick="showCpu()">CPUと対戦</button>
+  <button onclick="showCollection()">📦 図鑑</button>
 </div>
 
-<!-- ゲーム画面 -->
+<div id="cpuMenu" style="display:none;">
+  <button onclick="startCpuScan()">バーコード生成</button>
+  <button onclick="startCpuRandom()">ランダム生成</button>
+</div>
+
+<!-- ゲーム -->
 <div id="game" style="display:none;">
+<button onclick="location.reload()">🏠 戻る</button><br><br>
 
-<button onclick="backToTitle()">🏠 タイトルへ戻る</button>
+<input id="code"><button onclick="manual()">入力</button>
+<button onclick="scan()">📷</button>
 
-<br><br>
-
-<input id="manualCode" placeholder="バーコード入力">
-<button onclick="manualScan()">入力で生成</button>
-
-<br><br>
-
-<button onclick="startScanner()">📷 スキャン</button>
 <div id="reader"></div>
 
 <h3 id="turn"></h3>
 <div id="chars"></div>
 <div id="skills"></div>
-
 <h2 id="result"></h2>
-<div id="log"></div>
-
 </div>
 
 <script>
 let characters=[];
-let scanner;
-let currentPlayer=0;
-let battleActive=false;
+let gameMode="pvp";
+let current=0;
+let collection=JSON.parse(localStorage.getItem("col")||"[]");
 
-// 画像（自分で用意）
-const images = {
-  common: ["img/c1.png","img/c2.png","img/c3.png"],
-  rare: ["img/r1.png","img/r2.png"],
-  ssr: ["img/s1.png"]
+// 画像
+const images={
+  common:["img/c1.png","img/c2.png"],
+  rare:["img/r1.png"],
+  ssr:["img/s1.png"]
 };
 
-// 画像取得（固定）
-function getCharacterImage(code){
-  let num = parseInt(code.slice(-2));
+// レア決定
+function getImage(code){
+  let n=parseInt(code.slice(-2));
+  let r=n<70?"common":n<90?"rare":"ssr";
+  let arr=images[r];
+  return {sprite:arr[n%arr.length],rarity:r};
+}
 
-  let rarity;
-  if(num < 70) rarity="common";
-  else if(num < 90) rarity="rare";
-  else rarity="ssr";
-
-  let pool = images[rarity];
-  let index = num % pool.length;
-
-  return { sprite: pool[index], rarity };
+// 倍率
+function mult(r){
+  if(r=="rare") return 1.1+Math.random()*0.05;
+  if(r=="ssr") return 1.2+Math.random()*0.15;
+  return 1;
 }
 
 // キャラ生成
-function generateCharacter(code){
+function gen(code){
   let nums=code.replace(/\D/g,"").split("").map(Number);
-  let hp=(parseInt(nums.slice(0,3).join(""))%300)+100;
+  let base=parseInt(nums.slice(0,3).join(""))%300+100;
+  let img=getImage(code);
+  let m=mult(img.rarity);
 
-  let imgData=getCharacterImage(code);
-
-  return {
+  return{
     name:"モンスター",
-    rarity: imgData.rarity,
-    sprite: imgData.sprite,
-    hp, maxHp:hp,
-    atk:(parseInt(nums.slice(3,6).join(""))%100)+20,
-    def:(parseInt(nums.slice(6,9).join(""))%100)+10,
-    spd:(parseInt(nums.slice(9,12).join(""))%100)+10
+    rarity:img.rarity,
+    sprite:img.sprite,
+    hp:Math.floor(base*m),
+    maxHp:Math.floor(base*m),
+    atk:Math.floor((nums[3]*10+20)*m),
+    def:Math.floor((nums[6]*10+10)*m)
   };
+}
+
+// ガチャ
+function gacha(code){
+  document.getElementById("chars").innerHTML="召喚中...";
+  setTimeout(()=>{
+    let c=gen(code);
+    characters.push(c);
+    save(c);
+
+    if(c.rarity=="ssr") showSSR();
+
+    render();
+
+    if(characters.length>=2) startBattle();
+  },800);
+}
+
+// SSR演出
+function showSSR(){
+  let d=document.createElement("div");
+  d.id="ssrEffect";
+  d.innerHTML="✨SSR✨";
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),1000);
+}
+
+// 保存
+function save(c){
+  if(!collection.find(x=>x.sprite==c.sprite)){
+    collection.push(c);
+    localStorage.setItem("col",JSON.stringify(collection));
+  }
 }
 
 // 描画
 function render(){
   let html="";
   characters.forEach((c,i)=>{
-    let hpP=(c.hp/c.maxHp)*100;
+    let hpP=c.hp/c.maxHp*100;
+    let lost=100-hpP;
     html+=`
-    <div class="char" style="background:#333">
-      <b>${c.name} [${c.rarity}]</b><br>
-      <img src="${c.sprite}" width="80"><br>
-      ❤️ ${c.hp}/${c.maxHp}
-      <div class="hpbar" style="width:${hpP}%"></div>
-      ⚔️${c.atk} 🛡${c.def} 💨${c.spd}<br>
-      <button onclick="renameCharacter(${i})">名前変更</button>
+    <div class="char ${c.rarity}">
+      ${c.name}<br>
+      <img src="${c.sprite}" width=80><br>
+      ❤️${c.hp}/${c.maxHp}
+      <div class="hpWrap">
+        <div class="hpLost" style="width:${lost}%"></div>
+        <div class="hpNow" style="width:${hpP}%"></div>
+      </div>
+      ${c.hp<=0?"<b style=color:red>K.O</b>":""}
     </div>`;
   });
   document.getElementById("chars").innerHTML=html;
 }
 
-// 名前変更
-function renameCharacter(i){
-  let n=prompt("名前入力");
-  if(n) characters[i].name=n;
-  render();
-}
-
-// 手入力
-function manualScan(){
-  let code=document.getElementById("manualCode").value;
-  if(!code) return alert("入力して");
-
-  if(characters.length<2){
-    characters.push(generateCharacter(code));
-    render();
-  }
-
-  if(characters.length>=2) startBattle();
-}
-
-// カメラ
-function startScanner(){
-  scanner=new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:{width:250,height:120} },
-    text=>{
-      if(characters.length<2){
-        characters.push(generateCharacter(text));
-        render();
-      }
-      if(characters.length>=2){
-        scanner.stop();
-        startBattle();
-      }
-    }
-  );
-}
-
 // バトル
 function startBattle(){
-  battleActive=true;
-  currentPlayer=0;
-  updateTurn();
-  renderSkills();
+  current=0;
+  turn();
+  skillUI();
 }
 
-function updateTurn(){
-  document.getElementById("turn").innerText=
-    currentPlayer===0?"1Pのターン":"2Pのターン";
+function turn(){
+  document.getElementById("turn").innerText=current==0?"1P":"2P";
 }
 
-function renderSkills(){
-  document.getElementById("skills").innerHTML=`
-    <button onclick="action('attack')">攻撃</button>
-    <button onclick="action('heavy')">強攻撃</button>
-    <button onclick="action('defend')">防御</button>
-  `;
+function skillUI(){
+  document.getElementById("skills").innerHTML=
+  `<button onclick="act('atk')">攻撃</button>`;
 }
 
-function action(type){
-  if(!battleActive) return;
+function act(){
+  let a=characters[current];
+  let d=characters[1-current];
 
-  let atk=characters[currentPlayer];
-  let def=characters[1-currentPlayer];
-
-  let dmg=0;
-
-  if(type==="attack") dmg=atk.atk-def.def/2;
-  else if(type==="heavy"){
-    if(Math.random()<0.6) dmg=atk.atk*1.8;
-  }else if(type==="defend"){
-    atk.def*=1.5;
-  }
-
-  dmg=Math.max(0,Math.floor(dmg));
-  def.hp-=dmg;
+  let dmg=Math.max(0,a.atk-d.def/2);
+  d.hp-=dmg;
+  if(d.hp<0)d.hp=0;
 
   render();
 
-  if(def.hp<=0){
-    battleActive=false;
-    document.getElementById("result").innerText=
-      currentPlayer===0?"1P勝利":"2P勝利";
+  if(d.hp<=0){
+    document.getElementById("result").innerText="勝利";
     return;
   }
 
-  currentPlayer=1-currentPlayer;
-  updateTurn();
+  current=1-current;
+  turn();
+
+  if(gameMode=="cpu"&&current==1)setTimeout(cpu,500);
 }
 
-// シーン切替
-function startGame(){
-  document.getElementById("title").style.display="none";
-  document.getElementById("game").style.display="block";
+// CPU
+function cpu(){
+  act();
 }
 
-function backToTitle(){
-  location.reload();
+// UI
+function startPVP(){gameMode="pvp";start();}
+function showCpu(){title.style.display="none";cpuMenu.style.display="block";}
+function startCpuScan(){gameMode="cpu";start();}
+function startCpuRandom(){
+  gameMode="cpu";start();
+  characters[1]=gen(""+Math.random());
+}
+
+function start(){
+  title.style.display="none";
+  cpuMenu.style.display="none";
+  game.style.display="block";
+}
+
+// 入力
+function manual(){
+  let c=document.getElementById("code").value;
+  gacha(c);
+}
+
+// カメラ
+function scan(){
+  let s=new Html5Qrcode("reader");
+  s.start({facingMode:"environment"},
+  {fps:15,qrbox:{width:280,height:120}},
+  txt=>{
+    gacha(txt);
+    s.stop();
+  });
+}
+
+// 図鑑
+function showCollection(){
+  let html="<h2>図鑑</h2>";
+  collection.forEach(c=>{
+    html+=`<div class="char ${c.rarity}">
+      <img src="${c.sprite}" width=60>
+    </div>`;
+  });
+  document.body.innerHTML=html+"<br><button onclick='location.reload()'>戻る</button>";
 }
 </script>
 
