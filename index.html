@@ -10,190 +10,191 @@
 body{
   font-family:sans-serif;
   text-align:center;
-  color:white;
-  background:url("img/bg.jpg") no-repeat center/cover;
+  color:#f5f5f5;
+  background:#3b2f2f; /* ダークブラウン */
+  text-shadow:0 0 5px black;
+}
+
+/* UI共通 */
+.panel{
+  background:rgba(0,0,0,0.5);
+  padding:10px;
+  margin:10px;
+  border-radius:10px;
 }
 
 /* ターン */
-#turn{font-size:30px; margin:10px;}
+#turn{
+  font-size:32px;
+}
 
 /* キャラ */
 .char{
-  border:4px solid white;
+  border:4px solid #999;
   border-radius:15px;
   padding:10px;
   margin:10px;
 }
 .common{border-color:#cd7f32;}
 .rare{border-color:silver;}
-.ssr{border-color:gold; box-shadow:0 0 20px gold;}
+.ssr{border-color:gold;box-shadow:0 0 15px gold;}
 
 /* HP */
-.hpWrap{background:#333;height:10px;position:relative;}
+.hpWrap{background:#222;height:10px;position:relative;}
 .hpNow{background:lime;height:10px;}
 .hpLost{background:red;height:10px;position:absolute;right:0;}
 
-/* 横 */
+/* 横画面 */
 @media (orientation:landscape){
   #chars{display:flex;}
   .char{width:40%;}
-  .char img{width:150px;}
+  .char img{width:140px;}
 }
 
 /* エフェクト */
 #effect{
   position:fixed;
-  top:40%; left:50%;
-  transform:translate(-50%,-50%);
-  font-size:40px;
+  top:30%;
+  left:50%;
+  transform:translate(-50%,0);
+  font-size:42px;
   z-index:999;
+}
+
+/* 技ボタン */
+.skillBtn{
+  margin:5px;
+  padding:10px;
+  font-size:16px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔥 バーコードコロシアム</h1>
+<h1>バーコードコロシアム</h1>
 
-<div id="title">
-<button onclick="startPVP()">プレイヤー対戦</button>
-<button onclick="showOptions()">⚙️ オプション</button>
+<!-- タイトル -->
+<div id="title" class="panel">
+<button onclick="startPVP()">プレイヤー対戦</button><br><br>
+<button onclick="startCPU()">CPU対戦</button>
 </div>
 
-<div id="options" style="display:none;">
-<h2>設定</h2>
-<input id="p1" placeholder="プレイヤー1">
-<input id="p2" placeholder="プレイヤー2"><br><br>
-
-<button onclick="toggleSound()" id="soundBtn">音声: OFF</button><br><br>
-
-<button onclick="showSkillList()">📖 技一覧</button><br><br>
-
-<button onclick="location.reload()">戻る</button>
-</div>
-
+<!-- ゲーム -->
 <div id="game" style="display:none;">
-<input id="code">
-<button onclick="manual()">入力</button>
-<button onclick="randomGen()">🎲</button>
-<button onclick="scan()">📷</button>
+
+<div class="panel">
+<button onclick="manual()">入力召喚</button>
+<button onclick="randomGen()">ランダム召喚</button>
+<button onclick="scan()">スキャン召喚</button>
+</div>
 
 <div id="reader"></div>
 
-<h3 id="turn"></h3>
+<div id="turn" class="panel"></div>
+
 <div id="chars"></div>
-<div id="skills"></div>
-<h2 id="result"></h2>
+
+<div id="skills" class="panel"></div>
+
+<div id="result" class="panel"></div>
+
 </div>
 
 <script>
-let characters=[], current=0, tempCode=null;
-let playerNames=["1P","2P"];
-let soundEnabled=JSON.parse(localStorage.getItem("soundEnabled")||"false");
-
-/* 音 */
-const sounds={
- attack:new Audio("sound/attack.mp3"),
- miss:new Audio("sound/miss.mp3"),
- heal:new Audio("sound/heal.mp3"),
- buff:new Audio("sound/buff.mp3"),
- ultimate:new Audio("sound/ultimate.mp3")
-};
-function playSound(n){
- if(!soundEnabled)return;
- let s=sounds[n].cloneNode();
- s.play();
-}
+let characters=[], current=0;
+let gameMode="pvp";
 
 /* 技 */
-const skillList=[
+const skillsBase=[
 {name:"強打",power:1.8,miss:0.25},
-{name:"魔法",power:1.4,miss:0.15},
-{name:"毒針",power:0.5,instant:0.05},
-{name:"憤怒",buff:"atk"},
-{name:"鉄壁",buff:"def"},
-{name:"再生",heal:0.2},
-{name:"疫病",debuff:true},
-{name:"特攻",power:2.2,self:0.3}
+{name:"魔法",power:1.4,miss:0.15}
 ];
 
-function assignSkills(r){
- let s=[{name:"攻撃",power:1,miss:0.05}];
- let rdm=[...skillList].sort(()=>0.5-Math.random());
- s.push(rdm[0],rdm[1]);
- if(r==="ssr") s.push({name:"奥義",power:2.8,miss:0.1});
- return s;
+function assignSkills(){
+ return [
+  {name:"攻撃",power:1,miss:0.05},
+  skillsBase[Math.floor(Math.random()*skillsBase.length)]
+ ];
 }
 
 /* キャラ */
-function gen(code){
- let r=Math.random()<0.7?"common":Math.random()<0.9?"rare":"ssr";
- let base=100+Math.random()*200;
+function gen(){
  return{
   name:"モンスター",
-  rarity:r,
+  rarity:"common",
   sprite:"img/c1.png",
-  hp:base,
-  maxHp:base,
-  atk:20+Math.random()*50,
-  def:10+Math.random()*30,
-  skills:assignSkills(r)
+  hp:150,
+  maxHp:150,
+  atk:40,
+  def:20,
+  skills:assignSkills()
  };
 }
 
-/* UI */
-function showSummonButton(code){
- let r=Math.random()<0.1?"ssr":"normal";
- skills.innerHTML=`<button onclick="doSummon()">${r==="ssr"?"🌈究極召喚":"召喚"}</button>`;
- tempCode=code;
+/* 召喚 */
+function manual(){addChar();}
+function randomGen(){addChar();}
+function scan(){
+ let s=new Html5Qrcode("reader");
+ s.start({facingMode:"environment"},{fps:10,qrbox:250},
+ txt=>{
+  addChar();
+  s.stop();
+ });
 }
 
-function doSummon(){
- let c=gen(tempCode);
- characters.push(c);
+function addChar(){
+ characters.push(gen());
  render();
  if(characters.length>=2)startBattle();
 }
 
 /* バトル */
 function startBattle(){
- turn();
+ current=0;
+ updateTurn();
  showSkills();
 }
 
-function showSkills(){
- let c=characters[current];
- skills.innerHTML="";
- c.skills.forEach((s,i)=>{
-  skills.innerHTML+=`<button onclick="useSkill(${i})">${s.name}</button>`;
- });
+function updateTurn(){
+ turn.innerText=(current==0?"1P":"2P")+" のターン";
 }
 
+/* 技表示（ターンごと更新） */
+function showSkills(){
+ let c=characters[current];
+ let html="";
+ c.skills.forEach((s,i)=>{
+  html+=`<button class="skillBtn" onclick="useSkill(${i})">${s.name}</button>`;
+ });
+ skills.innerHTML=html;
+}
+
+/* 技処理 */
 function useSkill(i){
  let a=characters[current];
  let d=characters[1-current];
  let s=a.skills[i];
 
- showEffect(s);
+ showSkillName(s.name);
 
- if(s.miss && Math.random()<s.miss){
-  showText("Miss");
-  playSound("miss");
+ if(Math.random()<s.miss){
+  showResult("Miss");
   next();
   return;
  }
 
- let dmg=(a.atk-d.def/2)*(s.power||1);
+ let dmg=(a.atk-d.def/2)*s.power;
  d.hp-=dmg;
-
- showText("Hit");
- playSound("attack");
-
  if(d.hp<0)d.hp=0;
+
+ showResult("Hit");
+
  render();
 
  if(d.hp<=0){
-  result.innerText="勝利";
+  result.innerText=(current==0?"1P":"2P")+" 勝利";
   return;
  }
 
@@ -202,8 +203,15 @@ function useSkill(i){
 
 function next(){
  current=1-current;
- turn();
+ updateTurn();
  showSkills();
+
+ if(gameMode=="cpu" && current==1){
+  setTimeout(()=>{
+   let r=Math.floor(Math.random()*characters[1].skills.length);
+   useSkill(r);
+  },600);
+ }
 }
 
 /* 表示 */
@@ -211,80 +219,50 @@ function render(){
  let html="";
  characters.forEach(c=>{
   let hpP=c.hp/c.maxHp*100;
+
   html+=`
   <div class="char ${c.rarity}">
-  <img src="${c.sprite}" width=80><br>
-  ❤️${c.hp}
-  <div class="hpWrap">
-    <div class="hpNow" style="width:${hpP}%"></div>
-    <div class="hpLost" style="width:${100-hpP}%"></div>
-  </div>
+    <img src="${c.sprite}" width=80><br>
+    ❤️ ${c.hp}
+    <div class="hpWrap">
+      <div class="hpNow" style="width:${hpP}%"></div>
+      <div class="hpLost" style="width:${100-hpP}%"></div>
+    </div>
   </div>`;
  });
+
  chars.innerHTML=html;
 }
 
-function turn(){
- turn.innerText=playerNames[current]+" のターン";
-}
-
-/* エフェクト */
-function showEffect(s){
+/* エフェクト分離 */
+function showSkillName(name){
  let e=document.createElement("div");
  e.id="effect";
- e.innerText=s.name;
+ e.innerText=name;
  document.body.appendChild(e);
- setTimeout(()=>e.remove(),600);
+ setTimeout(()=>e.remove(),500);
 }
 
-function showText(t){
+function showResult(text){
  let e=document.createElement("div");
  e.id="effect";
- e.innerText=t;
+ e.style.top="50%";
+ e.innerText=text;
  document.body.appendChild(e);
- setTimeout(()=>e.remove(),600);
+ setTimeout(()=>e.remove(),500);
 }
 
-/* 入力 */
-function manual(){showSummonButton(code.value);}
-function randomGen(){showSummonButton(""+Math.random());}
-
-/* カメラ */
-function scan(){
- let s=new Html5Qrcode("reader");
- s.start({facingMode:"environment"},
- {fps:10,qrbox:250},
- txt=>{
-  showSummonButton(txt);
-  s.stop();
- });
-}
-
-/* UI */
+/* モード */
 function startPVP(){
+ gameMode="pvp";
  title.style.display="none";
  game.style.display="block";
 }
 
-/* オプション */
-function showOptions(){
+function startCPU(){
+ gameMode="cpu";
  title.style.display="none";
- options.style.display="block";
-}
-
-function toggleSound(){
- soundEnabled=!soundEnabled;
- localStorage.setItem("soundEnabled",soundEnabled);
- document.getElementById("soundBtn").innerText="音声: "+(soundEnabled?"ON":"OFF");
-}
-
-/* 技一覧 */
-function showSkillList(){
- let html="<h2>技一覧</h2>";
- skillList.forEach(s=>{
-  html+=`<div>${s.name}</div>`;
- });
- document.body.innerHTML=html+"<br><button onclick='location.reload()'>戻る</button>";
+ game.style.display="block";
 }
 </script>
 
