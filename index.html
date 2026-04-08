@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バーコードバトラー</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  color: white;
+  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+}
+
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(45deg,#ff6a00,#ee0979);
+  color: white;
+}
+
+.char {
+  border-radius: 15px;
+  padding: 10px;
+  margin: 10px;
+  position: relative;
+}
+
+.hpbar {
+  height: 10px;
+  background: lime;
+  border-radius: 5px;
+}
+
+#reader { width:300px; margin:auto; }
+</style>
+</head>
+
+<body>
+
+<!-- タイトル -->
+<div id="title">
+  <h1>🔥 バーコードバトラー</h1>
+  <button onclick="startGame()">ゲーム開始</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="game" style="display:none;">
+
+<button onclick="backToTitle()">🏠 タイトルへ戻る</button>
+
+<br><br>
+
+<input id="manualCode" placeholder="バーコード入力">
+<button onclick="manualScan()">入力で生成</button>
+
+<br><br>
+
+<button onclick="startScanner()">📷 スキャン</button>
+<div id="reader"></div>
+
+<h3 id="turn"></h3>
+<div id="chars"></div>
+<div id="skills"></div>
+
+<h2 id="result"></h2>
+<div id="log"></div>
+
+</div>
+
+<script>
+let characters=[];
+let scanner;
+let currentPlayer=0;
+let battleActive=false;
+
+// 画像（自分で用意）
+const images = {
+  common: ["img/c1.png","img/c2.png","img/c3.png"],
+  rare: ["img/r1.png","img/r2.png"],
+  ssr: ["img/s1.png"]
+};
+
+// 画像取得（固定）
+function getCharacterImage(code){
+  let num = parseInt(code.slice(-2));
+
+  let rarity;
+  if(num < 70) rarity="common";
+  else if(num < 90) rarity="rare";
+  else rarity="ssr";
+
+  let pool = images[rarity];
+  let index = num % pool.length;
+
+  return { sprite: pool[index], rarity };
+}
+
+// キャラ生成
+function generateCharacter(code){
+  let nums=code.replace(/\D/g,"").split("").map(Number);
+  let hp=(parseInt(nums.slice(0,3).join(""))%300)+100;
+
+  let imgData=getCharacterImage(code);
+
+  return {
+    name:"モンスター",
+    rarity: imgData.rarity,
+    sprite: imgData.sprite,
+    hp, maxHp:hp,
+    atk:(parseInt(nums.slice(3,6).join(""))%100)+20,
+    def:(parseInt(nums.slice(6,9).join(""))%100)+10,
+    spd:(parseInt(nums.slice(9,12).join(""))%100)+10
+  };
+}
+
+// 描画
+function render(){
+  let html="";
+  characters.forEach((c,i)=>{
+    let hpP=(c.hp/c.maxHp)*100;
+    html+=`
+    <div class="char" style="background:#333">
+      <b>${c.name} [${c.rarity}]</b><br>
+      <img src="${c.sprite}" width="80"><br>
+      ❤️ ${c.hp}/${c.maxHp}
+      <div class="hpbar" style="width:${hpP}%"></div>
+      ⚔️${c.atk} 🛡${c.def} 💨${c.spd}<br>
+      <button onclick="renameCharacter(${i})">名前変更</button>
+    </div>`;
+  });
+  document.getElementById("chars").innerHTML=html;
+}
+
+// 名前変更
+function renameCharacter(i){
+  let n=prompt("名前入力");
+  if(n) characters[i].name=n;
+  render();
+}
+
+// 手入力
+function manualScan(){
+  let code=document.getElementById("manualCode").value;
+  if(!code) return alert("入力して");
+
+  if(characters.length<2){
+    characters.push(generateCharacter(code));
+    render();
+  }
+
+  if(characters.length>=2) startBattle();
+}
+
+// カメラ
+function startScanner(){
+  scanner=new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode:"environment" },
+    { fps:10, qrbox:{width:250,height:120} },
+    text=>{
+      if(characters.length<2){
+        characters.push(generateCharacter(text));
+        render();
+      }
+      if(characters.length>=2){
+        scanner.stop();
+        startBattle();
+      }
+    }
+  );
+}
+
+// バトル
+function startBattle(){
+  battleActive=true;
+  currentPlayer=0;
+  updateTurn();
+  renderSkills();
+}
+
+function updateTurn(){
+  document.getElementById("turn").innerText=
+    currentPlayer===0?"1Pのターン":"2Pのターン";
+}
+
+function renderSkills(){
+  document.getElementById("skills").innerHTML=`
+    <button onclick="action('attack')">攻撃</button>
+    <button onclick="action('heavy')">強攻撃</button>
+    <button onclick="action('defend')">防御</button>
+  `;
+}
+
+function action(type){
+  if(!battleActive) return;
+
+  let atk=characters[currentPlayer];
+  let def=characters[1-currentPlayer];
+
+  let dmg=0;
+
+  if(type==="attack") dmg=atk.atk-def.def/2;
+  else if(type==="heavy"){
+    if(Math.random()<0.6) dmg=atk.atk*1.8;
+  }else if(type==="defend"){
+    atk.def*=1.5;
+  }
+
+  dmg=Math.max(0,Math.floor(dmg));
+  def.hp-=dmg;
+
+  render();
+
+  if(def.hp<=0){
+    battleActive=false;
+    document.getElementById("result").innerText=
+      currentPlayer===0?"1P勝利":"2P勝利";
+    return;
+  }
+
+  currentPlayer=1-currentPlayer;
+  updateTurn();
+}
+
+// シーン切替
+function startGame(){
+  document.getElementById("title").style.display="none";
+  document.getElementById("game").style.display="block";
+}
+
+function backToTitle(){
+  location.reload();
+}
+</script>
+
+</body>
+</html>
