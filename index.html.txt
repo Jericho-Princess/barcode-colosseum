@@ -331,15 +331,18 @@ async function scan(){
 
 function stopScan(){
   if(codeReader){
-    codeReader.reset();   // ← ZXingの停止メソッド
+    codeReader.reset();
     codeReader = null;
   }
 
   isScanning = false;
 
-  document.getElementById("video").srcObject = null; // カメラOFF
-  document.getElementById("stopBtn").style.display = "none";
-}
+  const video = document.getElementById("video");
+  if(video.srcObject){
+    video.srcObject.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+  }
+
   document.getElementById("stopBtn").style.display = "none";
 }
 
