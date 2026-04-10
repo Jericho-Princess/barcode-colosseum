@@ -277,27 +277,61 @@ function addChar(c){
 // --- スキャン機能 ---
 let codeReader;
 async function scan(){
+  // 既にスキャン中なら一旦リセット
+  stopScan();
+
   const video = document.getElementById("video");
+  document.getElementById("stopBtn").style.display = "block";
+
   try {
-    await navigator.mediaDevices.getUserMedia({ video: true });
-    document.getElementById("stopBtn").style.display = "block";
+    // 1. カメラの使用許可を取得
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: "environment" } // 背面カメラを優先
+    });
+    video.srcObject = stream;
+
+    // 2. 解析エンジンの初期化
     codeReader = new ZXing.BrowserMultiFormatReader();
-    const devices = await codeReader.listVideoInputDevices();
-    const deviceId = devices.find(d => /back|rear|environment/i.test(d.label))?.deviceId || devices[0].deviceId;
-    codeReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
-      if(result && characters.length < 2){
-        let txt = result.getText();
-        stopScan();
-        addChar(createCharacterFromBarcode(txt));
+    
+    // 3. ビデオ要素から解析を開始
+    // decodeFromVideoDevice の第一引数を null にすると srcObject (現在のカメラ) を使用します
+    codeReader.decodeFromVideoElement(video, (result, err) => {
+      if (result && characters.length < 2) {
+        console.log("バーコード検出:", result.getText());
+        
+        // 成功したら即座にカメラを止める
+        let code = result.getText();
+        stopScan(); 
+        
+        // 召喚処理へ
+        addChar(createCharacterFromBarcode(code));
+      }
+      if (err && !(err instanceof ZXing.NotFoundException)) {
+        console.error(err);
       }
     });
-  } catch (e) { alert("カメラが起動できません"); }
+
+  } catch (e) {
+    console.error("カメラ起動エラー:", e);
+    alert("カメラを起動できませんでした。ブラウザの設定でカメラ許可を確認してください。");
+    document.getElementById("stopBtn").style.display = "none";
+  }
 }
 
 function stopScan(){
-  if(codeReader) codeReader.reset();
+  // 解析を停止
+  if(codeReader){
+    codeReader.reset();
+    codeReader = null;
+  }
+
+  // カメラのストリーム（レンズ）を完全にオフにする
   const video = document.getElementById("video");
-  if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+  if(video.srcObject){
+    video.srcObject.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+  }
+
   document.getElementById("stopBtn").style.display = "none";
 }
 
