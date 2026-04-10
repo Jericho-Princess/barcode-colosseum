@@ -43,25 +43,6 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
-#stopBtn{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  z-index:9999; /* ← 最前面にする */
-  background:red;
-  color:white;
-  font-size:18px;
-  padding:15px 20px;
-  border-radius:50px;
-  border:none;
-  box-shadow:0 0 10px black;
-}
-#video{
-  width:100%;
-  height:auto; /* ←これに変更 */
-  max-height:60vh; /* ←画面の6割まで */
-  background:black;
-}
 </style>
 </head>
 <body>
@@ -110,7 +91,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
   <div id="reader"></div>
-<video id="video" playsinline autoplay muted></video>
+ <video id="video" style="width:100%; max-width:400px;"></video>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -317,27 +298,6 @@ let lastTime = 0;
 let isScanning = false;
 
 async function scan(){
-
-  stopScan();
-
-  let stream;
-
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }
-    });
-  }catch(e){
-    alert("カメラ許可が必要です");
-    return;
-  }
-
-  const video = document.getElementById("video");
-
-  video.srcObject = stream;
-
-  // ⭐これ追加（iPhone対策）
-  await video.play();
-
   document.getElementById("stopBtn").style.display = "block";
 
   if(isScanning) return;
@@ -345,10 +305,14 @@ async function scan(){
 
   codeReader = new ZXing.BrowserMultiFormatReader();
 
-  codeReader.decodeFromVideoElement(
-    video,
+  const devices = await codeReader.listVideoInputDevices();
+  selectedDeviceId = devices[0].deviceId;
+
+  codeReader.decodeFromVideoDevice(
+    selectedDeviceId,
+    'video',
     (result, err) => {
-      if(!isScanning) return;
+      if(!isScanning) return; // ←停止後の暴走防止
 
       if(result){
         let txt = result.getText();
@@ -367,19 +331,15 @@ async function scan(){
 
 function stopScan(){
   if(codeReader){
-    codeReader.reset();
+    codeReader.reset();   // ← ZXingの停止メソッド
     codeReader = null;
   }
 
   isScanning = false;
 
-  const video = document.getElementById("video");
-
-  if(video.srcObject){
-    video.srcObject.getTracks().forEach(track => track.stop());
-    video.srcObject = null;
-  }
-
+  document.getElementById("video").srcObject = null; // カメラOFF
+  document.getElementById("stopBtn").style.display = "none";
+}
   document.getElementById("stopBtn").style.display = "none";
 }
 
@@ -894,11 +854,8 @@ function rematch(){
 }
 
 function goTitle(){
-  stopScan(); // ←これ追加（超重要）
-
   document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
-
   characters=[];
   document.getElementById("chars").innerHTML="";
   document.getElementById("skills").innerHTML="";
