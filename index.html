@@ -276,59 +276,82 @@ function addChar(c){
 
 // --- スキャン機能 ---
 let codeReader;
+
 async function scan(){
-  // 既にスキャン中なら一旦リセット
+  // 1. 既存のスキャンを完全にリセット
   stopScan();
 
   const video = document.getElementById("video");
   document.getElementById("stopBtn").style.display = "block";
 
   try {
-    // 1. カメラの使用許可を取得
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: "environment" } // 背面カメラを優先
-    });
-    video.srcObject = stream;
-
-    // 2. 解析エンジンの初期化
+    // 2. 解析エンジンのインスタンスを作成
     codeReader = new ZXing.BrowserMultiFormatReader();
-    
-    // 3. ビデオ要素から解析を開始
-    // decodeFromVideoDevice の第一引数を null にすると srcObject (現在のカメラ) を使用します
+    console.log("ZXing Reader 初期化完了");
+
+    // 3. カメラストリームの取得
+    const constraints = {
+      video: {
+        facingMode: "environment", // 背面カメラ
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    // 映像が再生されるのを待つ
+    await video.play();
+
+    // 4. 解析開始（ビデオ要素を直接監視）
+    // decodeFromVideoElement は、渡された video 要素の描画を監視して解析します
     codeReader.decodeFromVideoElement(video, (result, err) => {
-      if (result && characters.length < 2) {
-        console.log("バーコード検出:", result.getText());
+      if (result) {
+        // 読み取り成功！
+        const code = result.getText();
+        console.log("スキャン成功:", code);
         
-        // 成功したら即座にカメラを止める
-        let code = result.getText();
-        stopScan(); 
+        // 連続読み取りを防ぐために即停止
+        stopScan();
         
-        // 召喚処理へ
+        // 召喚処理
         addChar(createCharacterFromBarcode(code));
       }
+
       if (err && !(err instanceof ZXing.NotFoundException)) {
-        console.error(err);
+        // 致命的なエラーが起きた場合のみログ出力
+        console.error("スキャン中エラー:", err);
       }
     });
 
   } catch (e) {
     console.error("カメラ起動エラー:", e);
-    alert("カメラを起動できませんでした。ブラウザの設定でカメラ許可を確認してください。");
+    // すでに動いているのにエラーが出る場合、権限がブロックされているか、
+    // 別の処理がカメラを掴んでいる可能性があります。
+    if (e.name !== "AbortError") {
+      alert("カメラを起動できませんでした。ブラウザの権限設定を確認してください。");
+    }
     document.getElementById("stopBtn").style.display = "none";
   }
 }
 
 function stopScan(){
-  // 解析を停止
+  // 解析を先に止める
   if(codeReader){
     codeReader.reset();
     codeReader = null;
+    console.log("解析を停止しました");
   }
 
-  // カメラのストリーム（レンズ）を完全にオフにする
+  // カメラのレンズを物理的に閉じるイメージでストリームを止める
   const video = document.getElementById("video");
   if(video.srcObject){
-    video.srcObject.getTracks().forEach(track => track.stop());
+    const stream = video.srcObject;
+    const tracks = stream.getTracks();
+    tracks.forEach(track => {
+      track.stop();
+      console.log("カメラトラックを停止しました");
+    });
     video.srcObject = null;
   }
 
