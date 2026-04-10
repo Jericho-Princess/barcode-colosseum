@@ -277,61 +277,49 @@ function addChar(c){
 // --- スキャン機能 ---
 let codeReader;
 
-async function scan(){
-  // 1. 既存のスキャンを完全にリセット
+async function scan() {
   stopScan();
 
   const video = document.getElementById("video");
-  document.getElementById("stopBtn").style.display = "block";
-
+  const stopBtn = document.getElementById("stopBtn");
+  
   try {
-    // 2. 解析エンジンのインスタンスを作成
+    // 1. まずZXingを準備
     codeReader = new ZXing.BrowserMultiFormatReader();
-    console.log("ZXing Reader 初期化完了");
 
-    // 3. カメラストリームの取得
-    const constraints = {
-      video: {
-        facingMode: "environment", // 背面カメラ
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    };
-
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject = stream;
-    // 映像が再生されるのを待つ
-    await video.play();
-
-    // 4. 解析開始（ビデオ要素を直接監視）
-    // decodeFromVideoElement は、渡された video 要素の描画を監視して解析します
-    codeReader.decodeFromVideoElement(video, (result, err) => {
-      if (result) {
-        // 読み取り成功！
-        const code = result.getText();
-        console.log("スキャン成功:", code);
-        
-        // 連続読み取りを防ぐために即停止
-        stopScan();
-        
-        // 召喚処理
-        addChar(createCharacterFromBarcode(code));
-      }
-
-      if (err && !(err instanceof ZXing.NotFoundException)) {
-        // 致命的なエラーが起きた場合のみログ出力
-        console.error("スキャン中エラー:", err);
-      }
+    // 2. カメラの権限をリクエスト（ここがアラートの正体）
+    // 直感的なエラーを出すために、ここで直接リクエストします
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
     });
 
+    // 3. 映像をセット
+    video.srcObject = stream;
+    stopBtn.style.display = "block";
+
+    // 4. 解析開始
+    // 少し待ってから解析を始めるのがコツ
+    setTimeout(() => {
+      codeReader.decodeFromVideoElement(video, (result, err) => {
+        if (result) {
+          const code = result.getText();
+          stopScan();
+          addChar(createCharacterFromBarcode(code));
+        }
+      });
+    }, 500);
+
   } catch (e) {
-    console.error("カメラ起動エラー:", e);
-    // すでに動いているのにエラーが出る場合、権限がブロックされているか、
-    // 別の処理がカメラを掴んでいる可能性があります。
-    if (e.name !== "AbortError") {
-      alert("カメラを起動できませんでした。ブラウザの権限設定を確認してください。");
+    console.error(e);
+    // アラートの内容で原因を判別
+    if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
+      alert("【原因：設定】\nカメラの使用が許可されていません。ブラウザのアドレスバーにある『鍵マーク』からカメラを許可してください。");
+    } else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      alert("【原因：セキュリティ】\nカメラ機能は『https://』で始まるサイトでないと動作しません。現在『http://』またはファイル直接実行になっています。");
+    } else {
+      alert("【原因：その他】\nカメラが見つからないか、別のアプリ（LINEやZoom等）がカメラを使用中です。\nエラー名: " + e.name);
     }
-    document.getElementById("stopBtn").style.display = "none";
+    stopBtn.style.display = "none";
   }
 }
 
