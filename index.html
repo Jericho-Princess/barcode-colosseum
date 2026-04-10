@@ -322,6 +322,8 @@ let isScanning = false;
 
 async function scan(){
   stopScan();
+
+  await new Promise(r => setTimeout(r, 300));
   document.getElementById("stopBtn").style.display = "block";
 
   if(isScanning) return;
@@ -329,8 +331,9 @@ async function scan(){
 
   codeReader = new ZXing.BrowserMultiFormatReader();
 
-  const devices = await codeReader.listVideoInputDevices();
-  selectedDeviceId = devices.find(d => d.label.includes("back"))?.deviceId || devices[0].deviceId;
+  selectedDeviceId =
+  devices.find(d => /back|rear|environment/i.test(d.label))?.deviceId
+  || devices[0].deviceId;
 
   codeReader.decodeFromVideoDevice(
     selectedDeviceId,
@@ -361,7 +364,7 @@ function stopScan(){
 
   const video = document.getElementById("video");
   if(video.srcObject){
-    video.srcObject.getTracks().forEach(track => track.stop()); // ★これ重要
+    video.srcObject.getTracks().forEach(track => track.stop());
     video.srcObject = null;
   }
 
