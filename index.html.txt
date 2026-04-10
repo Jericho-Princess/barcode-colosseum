@@ -86,7 +86,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="manualInput()">召喚</button><br><br>
     <button onclick="randomGen()">ランダム召喚</button>
     <button onclick="scan()">スキャン召喚</button>
-<button onclick="stopScan()">スキャン停止</button>
+<button onclick="stopScan()" id="stopBtn" style="display:none;">停止</button>
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
@@ -298,6 +298,7 @@ let lastTime = 0;
 let isScanning = false;
 
 async function scan(){
+  document.getElementById("stopBtn").style.display = "block";
 
   if(isScanning) return; // 二重起動防止
   isScanning = true;
@@ -329,13 +330,13 @@ async function scan(){
 }
 
 function stopScan(){
-  if(codeReader){
-    codeReader.reset();
-    codeReader = null;
+  if(scanner){
+    scanner.stop().then(()=>{
+      scanner.clear();
+      scanner = null;
+    });
   }
-
-  isScanning = false;
-  lastScan = "";
+  document.getElementById("stopBtn").style.display = "none";
 }
 
  function createHash(code){
