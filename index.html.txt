@@ -86,7 +86,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="manualInput()">召喚</button><br><br>
     <button onclick="randomGen()">ランダム召喚</button>
     <button onclick="scan()">スキャン召喚</button>
-<button onclick="stopScan()" id="stopBtn" style="display:none;">停止</button>
+<button onclick="stopScan()" id="stopBtn">停止</button>
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
@@ -636,7 +636,7 @@ if(s.debuffDef){
 
   if(crit){
     base *= 2;
-    msg += "<br>Critical！";
+    msg += "<br>Critical ！！";
   }
 
   let dmg = Math.floor(base);
