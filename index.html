@@ -58,7 +58,8 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 }
 #video{
   width:100%;
-  height:250px; /* ←これ重要 */
+  height:auto; /* ←これに変更 */
+  max-height:60vh; /* ←画面の6割まで */
   background:black;
 }
 </style>
@@ -316,6 +317,8 @@ let lastTime = 0;
 let isScanning = false;
 
 async function scan(){
+
+  stopScan();
 
   let stream;
 
@@ -891,8 +894,11 @@ function rematch(){
 }
 
 function goTitle(){
+  stopScan(); // ←これ追加（超重要）
+
   document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
+
   characters=[];
   document.getElementById("chars").innerHTML="";
   document.getElementById("skills").innerHTML="";
