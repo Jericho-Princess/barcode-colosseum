@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バーコードコロシアム</title>
-<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 <style>
 body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;text-shadow:0 0 5px black;}
 .panel{background:rgba(0,0,0,0.5);padding:15px;margin:10px;border-radius:15px;font-size:18px;}
@@ -14,13 +14,11 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 .rare{border-color:silver;}
 .ssr{border-color:gold;box-shadow:0 0 15px gold;}
 .hpWrap{background:#222;height:15px;position:relative;margin-top:5px;}
-.hpNow{background:lime;height:15px;transition:width 0.2s linear;}
+.hpNow{background:lime;height:15px;transition:width 0.5s linear;}
 #gameContent{display:flex;flex-direction:column;align-items:center;}
 #charsAndSkills{display:flex;flex-direction:row;justify-content:center;align-items:flex-start;flex-wrap:wrap;}
 #skills{margin-left:20px; min-width: 200px;}
-#cameraWrap{position:relative;width:100%;max-width:400px;margin:auto;}
-#video{width:100%;height:250px;background:black;border-radius:10px;}
-#cameraWrap::after{content:"";position:absolute;top:50%;left:50%;width:70%;height:40%;border:3px solid red;transform:translate(-50%,-50%);pointer-events:none;}
+#reader{width:100%;max-width:400px;margin:10px auto;background:black;border-radius:10px;overflow:hidden;}
 #effect{position:fixed;top:30%;left:50%;transform:translate(-50%,0);font-size:24px;z-index:999;background:rgba(0,0,0,0.9);padding:20px;border-radius:15px;border:2px solid gold;}
 .skillBtn{margin:10px;padding:15px 25px;font-size:18px;border-radius:10px;cursor:pointer;background:#eee;color:#222;border:none;font-weight:bold;}
 button{font-size:18px;padding:12px 20px;margin:5px;border-radius:10px;cursor:pointer;}
@@ -47,16 +45,15 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 <div id="game" style="display:none;">
   <button onclick="goTitle()">← タイトルに戻る</button>
   <div class="panel">
-    入力: <input id="barcodeInput" type="tel">
-    <button onclick="manualInput()">召喚</button>
-    <button onclick="scan()">スキャン</button>
+    バーコード入力: <input id="barcodeInput" type="tel">
+    <button onclick="manualInput()">召喚</button><br><br>
+    <button onclick="scan()">スキャン開始</button>
+    <button onclick="stopScan()" id="stopBtn" style="display:none;">停止</button>
     <button onclick="resetChars()">リセット</button>
   </div>
   <button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
-  <div id="cameraWrap">
-    <video id="video" autoplay playsinline muted></video>
-  </div>
+  <div id="reader"></div>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -72,8 +69,8 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 let characters=[], current=0, gameMode="pvp";
 let player1NameVal="1P", player2NameVal="2P";
 let battleStarted=false, waitingForCPU=false, pendingWin = null;
-let hpVisual = [], animRunning = false, isScanning = false;
-let codeReader = null;
+let hpVisual = [], animRunning = false;
+let html5QrCode = null;
 
 const IMAGES={
   common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
@@ -81,41 +78,46 @@ const IMAGES={
   ssr:Array.from({length:3},(_,i)=>`img/s${i+1}.png`)
 };
 
-// --- スキャン機能 ---
-async function scan() {
-  if (isScanning) return;
-  const video = document.getElementById("video");
-  try {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment", width: { ideal: 1280 } }
-    });
-    video.srcObject = stream;
-    await video.play();
-    isScanning = true;
-    
-    codeReader.decodeFromVideoElement(video, (result, err) => {
-      if (result && isScanning) {
-        isScanning = false;
-        stopScan();
-        addChar(result.getText());
-      }
-    });
-  } catch (e) {
-    alert("カメラエラー: " + e);
-  }
+// --- スキャン機能 (Html5Qrcode版) ---
+function scan() {
+  if (html5QrCode) stopScan();
+  
+  html5QrCode = new Html5Qrcode("reader");
+  const config = { 
+    fps: 10, 
+    qrbox: { width: 250, height: 150 }, // バーコード用に横長に調整
+    aspectRatio: 1.0
+  };
+
+  document.getElementById("stopBtn").style.display = "inline-block";
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    config,
+    (decodedText) => {
+      console.log("スキャン成功:", decodedText);
+      stopScan();
+      addChar(decodedText);
+    },
+    (errorMessage) => {
+      // 読み取り失敗時はログを出さない（高速回転するため）
+    }
+  ).catch((err) => {
+    alert("カメラエラー: " + err);
+  });
 }
 
 function stopScan() {
-  if (codeReader) codeReader.reset();
-  const video = document.getElementById("video");
-  if (video.srcObject) {
-    video.srcObject.getTracks().forEach(t => t.stop());
-    video.srcObject = null;
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode = null;
+      document.getElementById("stopBtn").style.display = "none";
+      document.getElementById("reader").innerHTML = "";
+    }).catch(err => console.error(err));
   }
 }
 
-// --- キャラクター生成 ---
+// --- ロジック部分 (壊れる前のコードを完全復元) ---
 function assignSkills(r) {
   let skills = [{name:"攻撃", power:1.0}];
   let pool = [
@@ -167,7 +169,7 @@ function render() {
       ❤️ ${Math.floor(c.hp)} / ${Math.floor(c.maxHp)}<br>
       ⚔️ ${Math.floor(c.tempAtk)} 🛡 ${Math.floor(c.tempDef)}
       <div class="hpWrap"><div class="hpNow" style="width:${hpP}%; background:${hpP<30?'red':'lime'}"></div></div>
-      <div class="status">${c.status || "状態：健康"}</div>
+      <div class="status">${c.status ? "状態：" + c.status : "状態：健康"}</div>
     </div>`;
   });
   document.getElementById("chars").innerHTML = html;
@@ -218,7 +220,7 @@ function nextTurn(){
   waitingForCPU = false;
   let c = characters[current];
   let name = current==0 ? player1NameVal : player2NameVal;
-
+  
   if(c.status === "paralyze"){
     showEffect(name + "は麻痺で動けない！", () => { c.status = null; current = 1 - current; nextTurn(); });
     return;
