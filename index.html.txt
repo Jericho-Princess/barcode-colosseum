@@ -292,23 +292,30 @@ function scan(){
   let s = new Html5Qrcode("reader");
 
   let lastScan = "";
+  let lastTime = 0;
 
   s.start(
     {
       facingMode: "environment",
-      width: { ideal: 640 },
-      height: { ideal: 480 }
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      focusMode: "continuous",
+      exposureMode: "continuous",
+      whiteBalanceMode: "continuous"
     },
     {
-      fps: 25,
-      qrbox: { width: 250, height: 100 },
+      fps: 30,
+      qrbox: { width: 300, height: 80 },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13
       ]
     },
     txt => {
-      if(txt !== lastScan){
+      let now = Date.now();
+
+      if(txt !== lastScan || now - lastTime > 1500){
         lastScan = txt;
+        lastTime = now;
         addChar(txt);
       }
     }
