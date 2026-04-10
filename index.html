@@ -89,15 +89,14 @@ async function scan() {
   const video = document.getElementById("video");
   const stopBtn = document.getElementById("stopBtn");
 
-  // ブラウザ対応チェック
-  if (!('BarcodeDetector' in window)) {
-    alert("お使いのブラウザはネイティブスキャンに非対応です。ChromeやEdge、iOS17以降のSafariをお試しください。");
-    return;
-  }
-
   try {
+    // 1. カメラストリームの開始
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+      video: { 
+        facingMode: "environment", 
+        width: { ideal: 1280 }, 
+        height: { ideal: 720 } 
+      }
     });
     video.srcObject = stream;
     await video.play();
@@ -105,29 +104,53 @@ async function scan() {
     isScanning = true;
     stopBtn.style.display = "inline-block";
 
-    const barcodeDetector = new BarcodeDetector({ 
-      formats: ['ean_13', 'ean_8', 'code_128', 'qr_code'] 
-    });
+    // 2. BarcodeDetector の初期化
+    // 対応している可能性のあるフォーマットをすべて羅列します
+    const formats = [
+      'aztec', 'code_128', 'code_39', 'code_93', 'codabar', 
+      'data_matrix', 'ean_13', 'ean_8', 'itf', 'pdf417', 
+      'qr_code', 'upc_a', 'upc_e'
+    ];
+    
+    // ブラウザがサポートしているフォーマットだけに絞り込む（エラー防止）
+    const supportedFormats = await BarcodeDetector.getSupportedFormats();
+    const useFormats = formats.filter(f => supportedFormats.includes(f));
+    
+    const barcodeDetector = new BarcodeDetector({ formats: useFormats.length > 0 ? useFormats : ['ean_13'] });
 
+    // 3. 高速解析ループ
     const detectLoop = async () => {
       if (!isScanning) return;
+      
       try {
+        // ビデオ要素からバーコードを検出
         const barcodes = await barcodeDetector.detect(video);
+        
         if (barcodes.length > 0) {
           const code = barcodes[0].rawValue;
+          console.log("Native Scan 成功:", code);
+          
+          // 成功したら即停止して召喚
           stopScan();
-          addChar(createCharacterFromBarcode(code));
+          setTimeout(() => {
+            addChar(createCharacterFromBarcode(code));
+          }, 200);
         } else {
+          // 見つからなければ次のフレームへ
           requestAnimationFrame(detectLoop);
         }
       } catch (e) {
+        // ループ中にエラーが出ても止まらずに継続
+        console.error("Detection error:", e);
         requestAnimationFrame(detectLoop);
       }
     };
+    
     detectLoop();
 
   } catch (e) {
-    alert("カメラが起動できません: " + e.name);
+    console.error("Scan setup error:", e);
+    alert("スキャンを開始できませんでした。");
     stopBtn.style.display = "none";
   }
 }
