@@ -323,7 +323,17 @@ let isScanning = false;
 async function scan(){
   stopScan();
 
+  const video = document.getElementById("video");
+
+  video.setAttribute("autoplay", true);
+  video.setAttribute("playsinline", true);
+  video.setAttribute("muted", true);
+
+  // ⭐これ追加（超重要）
+  await navigator.mediaDevices.getUserMedia({ video: true });
+
   await new Promise(r => setTimeout(r, 300));
+
   document.getElementById("stopBtn").style.display = "block";
 
   if(isScanning) return;
@@ -331,15 +341,17 @@ async function scan(){
 
   codeReader = new ZXing.BrowserMultiFormatReader();
 
+  const devices = await codeReader.listVideoInputDevices();
+
   selectedDeviceId =
-  devices.find(d => /back|rear|environment/i.test(d.label))?.deviceId
-  || devices[0].deviceId;
+    devices.find(d => /back|rear|environment/i.test(d.label))?.deviceId
+    || devices[0].deviceId;
 
   codeReader.decodeFromVideoDevice(
     selectedDeviceId,
     'video',
     (result, err) => {
-      if(!isScanning) return; // ←停止後の暴走防止
+      if(!isScanning) return;
 
       if(result){
         let txt = result.getText();
@@ -348,7 +360,6 @@ async function scan(){
         if(txt !== lastScan || now - lastTime > 1500){
           lastScan = txt;
           lastTime = now;
-
           addChar(txt);
         }
       }
