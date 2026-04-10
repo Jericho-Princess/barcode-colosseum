@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バーコードコロシアム</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/@zxing/browser"></script>
+
 <style>
 body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;text-shadow:0 0 5px black;}
 .panel{background:rgba(0,0,0,0.5);padding:15px;margin:10px;border-radius:15px;font-size:18px;}
@@ -42,6 +43,23 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
+#stopBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  z-index:9999; /* ← 最前面にする */
+  background:red;
+  color:white;
+  font-size:18px;
+  padding:15px 20px;
+  border-radius:50px;
+  border:none;
+  box-shadow:0 0 10px black;
+}
+#video{
+  position:relative;
+  z-index:1;
+}
 </style>
 </head>
 <body>
@@ -85,10 +103,12 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="manualInput()">召喚</button><br><br>
     <button onclick="randomGen()">ランダム召喚</button>
     <button onclick="scan()">スキャン召喚</button>
+<button onclick="stopScan()" id="stopBtn">停止</button>
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
   <div id="reader"></div>
+ <video id="video" style="width:100%; max-width:400px;"></video>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -288,28 +308,59 @@ function assignSkillsFixed(hash, rarity){
   return h >>> 0;
 }
 
-function scan(){
-  let s = new Html5Qrcode("reader");
+let codeReader;
+let selectedDeviceId;
+let lastScan = "";
+let lastTime = 0;
+let isScanning = false;
 
-  s.start(
-    { facingMode: "environment" },
-    {
-      fps: 15,
-      qrbox: { width: 300, height: 150 },
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128
-      ]
-    },
-    txt => {
-      addChar(txt);
-      s.stop();
-    },
-    err => {
-      // 読み取り中エラー（無視OK）
+async function scan(){
+  document.getElementById("stopBtn").style.display = "block";
+
+  if(isScanning) return;
+  isScanning = true;
+
+  codeReader = new ZXing.BrowserMultiFormatReader();
+
+  const devices = await codeReader.listVideoInputDevices();
+  selectedDeviceId = devices[0].deviceId;
+
+  codeReader.decodeFromVideoDevice(
+    selectedDeviceId,
+    'video',
+    (result, err) => {
+      if(!isScanning) return; // ←停止後の暴走防止
+
+      if(result){
+        let txt = result.getText();
+        let now = Date.now();
+
+        if(txt !== lastScan || now - lastTime > 1500){
+          lastScan = txt;
+          lastTime = now;
+
+          addChar(txt);
+        }
+      }
     }
   );
+}
+
+function stopScan(){
+  if(codeReader){
+    codeReader.reset();
+    codeReader = null;
+  }
+
+  isScanning = false;
+
+  const video = document.getElementById("video");
+  if(video.srcObject){
+    video.srcObject.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+  }
+
+  document.getElementById("stopBtn").style.display = "none";
 }
 
  function createHash(code){
@@ -484,6 +535,7 @@ function showEffect(msg,cb){
 }
 
 function startBattle(){
+  stopScan();
   current = 0;
   battleStarted = true;
   waitingForCPU = false;
@@ -604,7 +656,7 @@ if(s.debuffDef){
 
   if(crit){
     base *= 2;
-    msg += "<br>Critical！";
+    msg += "<br>Critical ！！";
   }
 
   let dmg = Math.floor(base);
