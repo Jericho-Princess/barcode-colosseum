@@ -182,7 +182,12 @@ function scan(){
     txt => {
       addChar(txt);
       s.stop();
+    },
+    err => {
+      // 読み取り中のエラー（無視OK）
     }
+  );
+}
 
 function createCharacterFromBarcode(code){
   // ハッシュ生成（安定）
