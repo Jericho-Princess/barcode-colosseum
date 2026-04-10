@@ -316,6 +316,15 @@ let lastTime = 0;
 let isScanning = false;
 
 async function scan(){
+
+  // ⭐ これ追加（iPhone対策）
+  try{
+    await navigator.mediaDevices.getUserMedia({ video: true });
+  }catch(e){
+    alert("カメラ許可が必要です");
+    return;
+  }
+
   document.getElementById("stopBtn").style.display = "block";
 
   if(isScanning) return;
@@ -324,13 +333,16 @@ async function scan(){
   codeReader = new ZXing.BrowserMultiFormatReader();
 
   const devices = await codeReader.listVideoInputDevices();
-  selectedDeviceId = devices[0].deviceId;
+
+  // ⭐ 背面カメラ優先
+  selectedDeviceId = devices[devices.length - 1].deviceId;
 
   codeReader.decodeFromVideoDevice(
     selectedDeviceId,
     'video',
     (result, err) => {
-      if(!isScanning) return; // ←停止後の暴走防止
+
+      if(!isScanning) return;
 
       if(result){
         let txt = result.getText();
