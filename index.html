@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バーコードコロシアム (Native Scan)</title>
+<title>バーコードコロシアム (Fixed Scan)</title>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+
 <style>
-/* スタイルは維持 */
+/* スタイル維持 */
 body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;text-shadow:0 0 5px black;}
 .panel{background:rgba(0,0,0,0.5);padding:15px;margin:10px;border-radius:15px;font-size:18px;}
 #turn{font-size:32px;margin:10px 0;}
@@ -74,15 +76,15 @@ let characters=[], current=0, gameMode="pvp";
 let player1NameVal="1P", player2NameVal="2P";
 let battleStarted=false, waitingForCPU=false, pendingWin = null;
 let hpVisual = [], animRunning = false, isScanning = false;
+let codeReader = null; // スキャンエンジンの保持用
 
-// 共通データ
 const IMAGES={
   common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
   rare:Array.from({length:5},(_,i)=>`img/r${i+1}.png`),
   ssr:Array.from({length:3},(_,i)=>`img/s${i+1}.png`)
 };
 
-// --- スキャン機能 (Native Barcode Detector API) ---
+// --- 復活：スキャン機能 (確実な読み出し) ---
 async function scan() {
   if (isScanning) return;
   
@@ -90,97 +92,72 @@ async function scan() {
   const stopBtn = document.getElementById("stopBtn");
 
   try {
-    // 1. カメラストリームの開始
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { 
-        facingMode: "environment", 
-        width: { ideal: 1280 }, 
-        height: { ideal: 720 } 
-      }
-    });
+    // 1. スキャンエンジンの初期化
+    codeReader = new ZXing.BrowserMultiFormatReader();
+
+    // 2. カメラストリームの開始
+    const constraints = {
+      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+    };
+    
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = stream;
     await video.play();
     
     isScanning = true;
     stopBtn.style.display = "inline-block";
 
-    // 2. BarcodeDetector の初期化
-    // 対応している可能性のあるフォーマットをすべて羅列します
-    const formats = [
-      'aztec', 'code_128', 'code_39', 'code_93', 'codabar', 
-      'data_matrix', 'ean_13', 'ean_8', 'itf', 'pdf417', 
-      'qr_code', 'upc_a', 'upc_e'
-    ];
-    
-    // ブラウザがサポートしているフォーマットだけに絞り込む（エラー防止）
-    const supportedFormats = await BarcodeDetector.getSupportedFormats();
-    const useFormats = formats.filter(f => supportedFormats.includes(f));
-    
-    const barcodeDetector = new BarcodeDetector({ formats: useFormats.length > 0 ? useFormats : ['ean_13'] });
-
-    // 3. 高速解析ループ
-    const detectLoop = async () => {
-      if (!isScanning) return;
-      
-      try {
-        // ビデオ要素からバーコードを検出
-        const barcodes = await barcodeDetector.detect(video);
+    // 3. 読み取りループの開始
+    // decodeFromVideoElement は映像をリアルタイム監視して結果を返します
+    codeReader.decodeFromVideoElement(video, (result, err) => {
+      if (result) {
+        const code = result.getText();
+        console.log("読み取り成功:", code);
         
-        if (barcodes.length > 0) {
-          const code = barcodes[0].rawValue;
-          console.log("Native Scan 成功:", code);
-          
-          // 成功したら即停止して召喚
-          stopScan();
-          setTimeout(() => {
-            addChar(createCharacterFromBarcode(code));
-          }, 200);
-        } else {
-          // 見つからなければ次のフレームへ
-          requestAnimationFrame(detectLoop);
-        }
-      } catch (e) {
-        // ループ中にエラーが出ても止まらずに継続
-        console.error("Detection error:", e);
-        requestAnimationFrame(detectLoop);
+        // 成功したら即座にストップ
+        stopScan();
+        
+        // 召喚処理へ（連続召喚防止のため少し待機）
+        setTimeout(() => {
+          addChar(createCharacterFromBarcode(code));
+        }, 300);
       }
-    };
-    
-    detectLoop();
+      // エラー（NotFound等）は無視してループ継続
+    });
 
   } catch (e) {
-    console.error("Scan setup error:", e);
-    alert("スキャンを開始できませんでした。");
+    console.error("Scan Error:", e);
+    alert("カメラが起動できないか、権限がありません。");
     stopBtn.style.display = "none";
   }
 }
 
 function stopScan() {
   isScanning = false;
+  if (codeReader) {
+    codeReader.reset(); // エンジンの停止
+    codeReader = null;
+  }
   const video = document.getElementById("video");
   if (video.srcObject) {
-    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject.getTracks().forEach(t => t.stop()); // カメラレンズを閉じる
     video.srcObject = null;
   }
   document.getElementById("stopBtn").style.display = "none";
 }
 
-// --- キャラクターロジック ---
+// --- キャラクター・バトルロジック (変更なし) ---
 function createCharacterFromBarcode(code) {
   let hash = 0;
   for(let i=0; i<code.length; i++) hash = (hash << 5) - hash + code.charCodeAt(i);
   hash = Math.abs(hash);
-
   const r = (hash % 100) / 100;
   const rarity = r < 0.05 ? "ssr" : r < 0.25 ? "rare" : "common";
-
   let hp = 300 + (hash % 100);
   let atk = 40 + (hash % 20);
   let def = 20 + (hash % 15);
-
   if(rarity === "rare") { hp *= 1.2; atk *= 1.2; def *= 1.2; }
   if(rarity === "ssr")  { hp *= 1.5; atk *= 1.5; def *= 1.5; }
-
   return {
     name: "M-" + code.slice(-4),
     rarity, hp: Math.floor(hp), maxHp: Math.floor(hp),
@@ -216,11 +193,9 @@ function addChar(c) {
   });
 }
 
-// --- バトルシステム (以前のロジックを最適化) ---
 function render() {
   const turnDisplay = document.getElementById("turn");
   turnDisplay.innerText = battleStarted ? (current === 0 ? player1NameVal : player2NameVal) + "のターン" : "";
-  
   let html = "";
   characters.forEach((c, i) => {
     const hpP = (hpVisual[i] / c.maxHp) * 100;
@@ -240,15 +215,10 @@ function useSkill(idx) {
   if (waitingForCPU || !battleStarted) return;
   const a = characters[current], d = characters[1-current], s = a.skills[idx];
   if (s.used) return;
-  
   waitingForCPU = true;
   let msg = a.name + "の" + s.name + "！";
   if (s.name === "奥義") s.used = true;
-
-  // 判定処理
-  if (s.miss && Math.random() < s.miss) {
-    msg += "<br>ミス！";
-  } else {
+  if (s.miss && Math.random() < s.miss) { msg += "<br>ミス！"; } else {
     if (s.power) {
       let dmg = Math.floor((a.tempAtk * s.power) - (d.tempDef * 0.5));
       dmg = Math.max(1, dmg);
@@ -263,21 +233,16 @@ function useSkill(idx) {
     if (s.buffDef) { a.tempDef *= s.buffDef; msg += "<br>防御が上がった！"; }
     if (s.status && Math.random() < (s.rate || 1)) { d.status = s.status; msg += `<br>${s.status}状態にした！`; }
   }
-
   showEffect(msg, () => {
-    if (d.hp <= 0) {
-      showWin(current === 0 ? player1NameVal : player2NameVal);
-    } else {
+    if (d.hp <= 0) { showWin(current === 0 ? player1NameVal : player2NameVal); } else {
       waitingForCPU = false;
       current = 1 - current;
       render();
-      if(gameMode === "cpu" && current === 1) setTimeout(cpuTurn, 800);
-      else showSkills();
+      if(gameMode === "cpu" && current === 1) setTimeout(cpuTurn, 800); else showSkills();
     }
   });
 }
 
-// その他UI/管理用関数 (reset, rematch, startBattle などは以前と同様)
 function showSkills() {
   const c = characters[current];
   let html = "";
@@ -305,16 +270,12 @@ function startBattle() {
   document.getElementById("startBattleBtn").style.display = "none";
   hpVisual = characters.map(c => c.hp);
   if (!animRunning) { animRunning = true; loop(); }
-  showSkills();
-  render();
+  showSkills(); render();
 }
 
 function loop() {
-  characters.forEach((c, i) => {
-    hpVisual[i] += (c.hp - hpVisual[i]) * 0.1;
-  });
-  render();
-  requestAnimationFrame(loop);
+  characters.forEach((c, i) => { hpVisual[i] += (c.hp - hpVisual[i]) * 0.1; });
+  render(); requestAnimationFrame(loop);
 }
 
 function startPVP() { gameMode="pvp"; setupGame(); }
