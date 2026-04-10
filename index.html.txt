@@ -300,19 +300,19 @@ let isScanning = false;
 async function scan(){
   document.getElementById("stopBtn").style.display = "block";
 
-  if(isScanning) return; // 二重起動防止
+  if(isScanning) return;
   isScanning = true;
 
   codeReader = new ZXing.BrowserMultiFormatReader();
 
-  const videoInputDevices = await codeReader.listVideoInputDevices();
-
-  selectedDeviceId = videoInputDevices[0].deviceId;
+  const devices = await codeReader.listVideoInputDevices();
+  selectedDeviceId = devices[0].deviceId;
 
   codeReader.decodeFromVideoDevice(
     selectedDeviceId,
     'video',
     (result, err) => {
+      if(!isScanning) return; // ←停止後の暴走防止
 
       if(result){
         let txt = result.getText();
@@ -330,12 +330,16 @@ async function scan(){
 }
 
 function stopScan(){
-  if(scanner){
-    scanner.stop().then(()=>{
-      scanner.clear();
-      scanner = null;
-    });
+  if(codeReader){
+    codeReader.reset();   // ← ZXingの停止メソッド
+    codeReader = null;
   }
+
+  isScanning = false;
+
+  document.getElementById("video").srcObject = null; // カメラOFF
+  document.getElementById("stopBtn").style.display = "none";
+}
   document.getElementById("stopBtn").style.display = "none";
 }
 
