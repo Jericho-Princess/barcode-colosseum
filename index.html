@@ -143,15 +143,19 @@ function randomGen(){addChar();}
 function addChar(code=""){
   if(characters.length>=2)return;
 
-  let c = gen(code);
+  // ⭐ 分岐追加
+  let c;
+  if(code){
+    c = createCharacterFromBarcode(code); // ←こっち使う
+  }else{
+    c = gen(); // ランダム用
+  }
 
   let summonText = "～　召喚　～";
   if(c.rarity==="rare") summonText = "～　上位召喚　～";
   if(c.rarity==="ssr") summonText = "✨ 　究極召喚　 ✨";
 
   showEffect(summonText + "<br>" + c.name + " が現れた", ()=>{
-
-    // ⭐ ポップが消えてから追加
     characters.push(c);
     hpVisual.push(c.hp); 
     render();
@@ -174,6 +178,73 @@ function scan(){
   ).catch(err=>{
     alert("カメラエラー："+err);
   });
+}
+
+function createCharacterFromBarcode(code){
+  // ハッシュ生成（安定）
+  let hash = code.split("").reduce((a,b)=>a + b.charCodeAt(0), 0);
+
+  // =========================
+  // レア度（バーコード依存）
+  // =========================
+  let r = (hash % 100) / 100;
+
+  let rarity = "common";
+  if(r < 0.04) rarity = "ssr";
+  else if(r < 0.24) rarity = "rare";
+
+  // ⭐ 当たりバーコード（任意）
+  if(code.startsWith("999")) rarity = "ssr";
+  if(code.startsWith("777")) rarity = "rare";
+
+  // =========================
+  // ステータス（バーコード依存）
+  // =========================
+  let atk = 40 + (hash % 15);
+  let def = 20 + (hash % 10);
+  let hp  = 300 + (hash % 70);
+
+  // レア度補正
+  if(rarity==="rare"){
+    atk *= 1.2;
+    def *= 1.2;
+    hp  *= 1.2;
+  }
+  if(rarity==="ssr"){
+    atk *= 1.4;
+    def *= 1.4;
+    hp  *= 1.4;
+  }
+
+  atk = Math.floor(atk);
+  def = Math.floor(def);
+  hp  = Math.floor(hp);
+
+  // =========================
+  // 画像（完全固定）
+  // =========================
+  let list = IMAGES[rarity];
+  let index = hash % list.length;
+  let sprite = list[index];
+
+  // =========================
+  // スキル（そのまま）
+  // =========================
+  let skills = skills = assignSkills(rarity);
+
+  return {
+    code: code,
+    rarity: rarity,
+    atk: atk,
+    def: def,
+    maxHp: hp,
+    hp: hp,
+    tempAtk: atk,
+    tempDef: def,
+    sprite: sprite,
+    skills: skills,
+    status: null
+  };
 }
 
 function render(){
