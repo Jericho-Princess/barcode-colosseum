@@ -321,7 +321,7 @@ async function scan(){
 
   try{
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" } // ⭐背面カメラ指定
+      video: { facingMode: "environment" }
     });
   }catch(e){
     alert("カメラ許可が必要です");
@@ -329,7 +329,11 @@ async function scan(){
   }
 
   const video = document.getElementById("video");
+
   video.srcObject = stream;
+
+  // ⭐これ追加（iPhone対策）
+  await video.play();
 
   document.getElementById("stopBtn").style.display = "block";
 
