@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バーコードコロシアム</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/@zxing/browser"></script>
+
 <style>
 body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;text-shadow:0 0 5px black;}
 .panel{background:rgba(0,0,0,0.5);padding:15px;margin:10px;border-radius:15px;font-size:18px;}
@@ -89,6 +90,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
   <div id="reader"></div>
+ <video id="video" style="width:100%; max-width:400px;"></video>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -288,38 +290,49 @@ function assignSkillsFixed(hash, rarity){
   return h >>> 0;
 }
 
-function scan(){
-  let s = new Html5Qrcode("reader");
+let codeReader;
+let selectedDeviceId;
+let lastScan = "";
+let lastTime = 0;
 
-  let lastScan = "";
-  let lastTime = 0;
+async function scan(){
 
-  s.start(
-    {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      focusMode: "continuous",
-      exposureMode: "continuous",
-      whiteBalanceMode: "continuous"
-    },
-    {
-      fps: 30,
-      qrbox: { width: 300, height: 80 },
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13
-      ]
-    },
-    txt => {
-      let now = Date.now();
+  codeReader = new ZXing.BrowserMultiFormatReader();
 
-      if(txt !== lastScan || now - lastTime > 1500){
-        lastScan = txt;
-        lastTime = now;
-        addChar(txt);
+  const videoInputDevices = await codeReader.listVideoInputDevices();
+
+  // 背面カメラ優先
+  selectedDeviceId = videoInputDevices.find(d =>
+    d.label.toLowerCase().includes('back') ||
+    d.label.toLowerCase().includes('rear')
+  )?.deviceId || videoInputDevices[0].deviceId;
+
+  codeReader.decodeFromVideoDevice(
+    selectedDeviceId,
+    'video',
+    (result, err) => {
+
+      if(result){
+        let txt = result.getText();
+        let now = Date.now();
+
+        if(txt !== lastScan || now - lastTime > 1500){
+          lastScan = txt;
+          lastTime = now;
+
+          addChar(txt); // ←そのまま使える
+        }
       }
+
+      // エラーは無視でOK
     }
   );
+}
+
+function stopScan(){
+  if(codeReader){
+    codeReader.reset();
+  }
 }
 
  function createHash(code){
