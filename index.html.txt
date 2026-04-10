@@ -86,6 +86,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="manualInput()">召喚</button><br><br>
     <button onclick="randomGen()">ランダム召喚</button>
     <button onclick="scan()">スキャン召喚</button>
+<button onclick="stopScan()">スキャン停止</button>
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
@@ -294,18 +295,18 @@ let codeReader;
 let selectedDeviceId;
 let lastScan = "";
 let lastTime = 0;
+let isScanning = false;
 
 async function scan(){
+
+  if(isScanning) return; // 二重起動防止
+  isScanning = true;
 
   codeReader = new ZXing.BrowserMultiFormatReader();
 
   const videoInputDevices = await codeReader.listVideoInputDevices();
 
-  // 背面カメラ優先
-  selectedDeviceId = videoInputDevices.find(d =>
-    d.label.toLowerCase().includes('back') ||
-    d.label.toLowerCase().includes('rear')
-  )?.deviceId || videoInputDevices[0].deviceId;
+  selectedDeviceId = videoInputDevices[0].deviceId;
 
   codeReader.decodeFromVideoDevice(
     selectedDeviceId,
@@ -320,11 +321,9 @@ async function scan(){
           lastScan = txt;
           lastTime = now;
 
-          addChar(txt); // ←そのまま使える
+          addChar(txt);
         }
       }
-
-      // エラーは無視でOK
     }
   );
 }
@@ -332,7 +331,11 @@ async function scan(){
 function stopScan(){
   if(codeReader){
     codeReader.reset();
+    codeReader = null;
   }
+
+  isScanning = false;
+  lastScan = "";
 }
 
  function createHash(code){
@@ -507,6 +510,7 @@ function showEffect(msg,cb){
 }
 
 function startBattle(){
+  stopScan();
   current = 0;
   battleStarted = true;
   waitingForCPU = false;
