@@ -88,7 +88,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
-  <div id="reader"></div>
+  <div id="reader" style="width:300px;height:200px;margin:auto;"></div>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -107,6 +107,7 @@ let battleStarted=false, waitingForCPU=false;
 let pendingWin = null;
 let hpVisual = [];
 let animRunning = false;
+let scanner = null;
 
 const IMAGES={
   common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
@@ -288,40 +289,53 @@ function assignSkillsFixed(hash, rarity){
   return h >>> 0;
 }
 
-function scan(){
-  let s = new Html5Qrcode("reader");
+async function scan(){
 
-  s.start(
+  // 既に起動してたら止める
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+  }
+
+  scanner = new Html5Qrcode("reader");
+
+  let devices = await Html5Qrcode.getCameras();
+
+  // 背面カメラ優先
+  let backCam = devices.find(d =>
+    d.label.toLowerCase().includes("back") ||
+    d.label.toLowerCase().includes("rear")
+  );
+
+  let cameraId = backCam ? backCam.id : devices[0].id;
+
+  scanner.start(
+    cameraId,
     {
-      facingMode: "environment"
-    },
-    {
-      fps: 30, // 最大付近
-      qrbox: { width: 280, height: 90 }, // 横長でバーコード特化
+      fps: 30,
+      qrbox: { width: 280, height: 90 },
       aspectRatio: 1.777,
-
       videoConstraints: {
         width: 640,
-        height: 360 // 軽量化（超重要）
+        height: 360
       },
-
-      // ⭐最小構成（爆速化）
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8
       ],
-
-      // ⭐追加で高速化（対応環境のみ）
       experimentalFeatures: {
         useBarCodeDetectorIfSupported: true
       }
     },
     txt => {
-      navigator.vibrate?.(50); // 成功フィードバック（爆速体感）
+      navigator.vibrate?.(50);
       addChar(txt);
-      s.stop();
-    },
-    err => {}
+
+      scanner.stop().then(()=>{
+        scanner.clear();
+        scanner = null;
+      });
+    }
   ).catch(err => console.log(err));
 }
 
@@ -834,9 +848,18 @@ function rematch(){
   proceedTurn();
 }
 
-function goTitle(){
+async function goTitle(){
+
+  // ⭐これ追加
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;
+  }
+
   document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
+
   characters=[];
   document.getElementById("chars").innerHTML="";
   document.getElementById("skills").innerHTML="";
