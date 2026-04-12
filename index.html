@@ -292,24 +292,37 @@ function scan(){
   let s = new Html5Qrcode("reader");
 
   s.start(
-    { facingMode: "environment" },
     {
-      fps: 15,
-      qrbox: { width: 300, height: 150 },
+      facingMode: "environment"
+    },
+    {
+      fps: 30, // 最大付近
+      qrbox: { width: 280, height: 90 }, // 横長でバーコード特化
+      aspectRatio: 1.777,
+
+      videoConstraints: {
+        width: 640,
+        height: 360 // 軽量化（超重要）
+      },
+
+      // ⭐最小構成（爆速化）
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128
-      ]
+        Html5QrcodeSupportedFormats.EAN_8
+      ],
+
+      // ⭐追加で高速化（対応環境のみ）
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
     },
     txt => {
+      navigator.vibrate?.(50); // 成功フィードバック（爆速体感）
       addChar(txt);
       s.stop();
     },
-    err => {
-      // 読み取り中エラー（無視OK）
-    }
-  );
+    err => {}
+  ).catch(err => console.log(err));
 }
 
  function createHash(code){
