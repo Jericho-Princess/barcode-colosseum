@@ -22,37 +22,47 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 .rare{border-color:silver;}
 .ssr{border-color:var(--gold);box-shadow:0 0 25px var(--gold);}
 
-.img-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 160px; margin: 5px 0; }
+.img-box { 
+  flex-grow: 1; display: flex; align-items: center; justify-content: center; 
+  min-height: 160px; margin: 5px 0; 
+}
 .char img{ width: auto; height: auto; max-width: 100%; max-height: 180px; image-rendering: pixelated; }
 
 .char-name { font-size: 14px; font-weight: bold; display: block; height: 1.4em; overflow: hidden; margin-bottom: 5px; border-bottom: 1px solid #666; }
+.status-area { margin-top: auto; }
 .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; display: block; }
 .hpWrap{background:#222;height:20px;border-radius:10px;overflow:hidden;margin:8px 0;position:relative; border:1px solid #555;}
 .hpNow{background:lime;height:100%;transition:width 0.3s linear;}
 .status-badge{font-size:18px;margin-top:8px;font-weight:bold;min-height:26px;}
-.stats-info { display:flex; justify-content: space-around; background:rgba(0,0,0,0.5); border-radius:8px; padding:8px; margin-top:8px; font-size: 18px; font-weight:bold; }
+.stats-info {
+  display:flex; justify-content: space-around; background:rgba(0,0,0,0.5); 
+  border-radius:8px; padding:8px; margin-top:8px; font-size: 18px; font-weight:bold;
+}
 
 #effect {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 92%; max-width: 450px; background: rgba(0,0,0,0.95);
   padding: 35px; border-radius: 20px; border: 3px solid #aaa;
-  z-index: 5000; font-size: 28px; box-shadow: 0 0 50px black;
+  z-index: 3000; font-size: 28px; box-shadow: 0 0 50px black;
 }
 .dmg-text { font-size: 42px; font-weight: bold; display: block; margin: 15px 0; color: var(--red); }
 
 button{font-size:20px;padding:14px 18px;margin:5px;border-radius:12px;background:#444;color:white;border:none;box-shadow:0 5px #111;}
 button:active{transform:translateY(2px);box-shadow:0 2px #111;}
 .skillBtn{width:46%; margin:5px; font-size:20px; font-weight: bold; padding: 20px 5px;}
+#startBattleBtn{background: orange; width:92%; font-size:30px; margin:20px auto; padding: 20px;}
 
+.header-nav { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(0,0,0,0.4); }
 #options { position: fixed; top:0; left:0; width:100%; height:100%; background:#3b2f2f; z-index:4000; overflow-y:auto; padding:25px; box-sizing:border-box; display:none;}
+table { width:100%; border-collapse: collapse; margin-top:10px; font-size:14px; }
+th, td { border:1px solid #666; padding:8px; text-align:left; }
 </style>
 </head>
 <body>
 
 <div id="title">
   <div class="panel">
-    <img src="img/logo.png" style="width:300px; max-width:90%;"><br>
-    <div style="font-size: 36px; font-weight: bold; margin: 20px 0; color: var(--gold);">BARCODE<br>COLOSSEUM</div>
+    <div style="font-size: 36px; font-weight: bold; margin: 40px 0; color: var(--gold);">BARCODE<br>COLOSSEUM</div>
     <button onclick="startMode('pvp')">プレイヤー対戦</button><br>
     <button onclick="startMode('cpu')">CPU対戦</button><br>
     <button onclick="showOptions()">設定</button>
@@ -62,46 +72,35 @@ button:active{transform:translateY(2px);box-shadow:0 2px #111;}
 <div id="options">
   <h2>設定</h2>
   <div class="panel">
-    1P名: <input id="player1Name" placeholder="1P" style="width:100px; font-size:18px; padding:5px;">
-    2P名: <input id="player2Name" placeholder="2P" style="width:100px; font-size:18px; padding:5px;">
-    <h3 style="text-align:left; margin-top:20px;">技一覧</h3>
-    <ul style="text-align:left; font-size:14px;">
-      <li>攻撃: 標準攻撃、必中</li>
-      <li>強打: 高威力、25%で失敗</li>
-      <li>魔法: 高威力、15%で失敗</li>
-      <li>毒針: 低威力、5%で即死</li>
-      <li>憤怒: 自身の攻撃力を強化</li>
-      <li>鉄壁: 自身の防御力を強化</li>
-      <li>再生: 体力回復 ＆ 防御少し強化</li>
-      <li>疫病: 相手の攻・防を低下</li>
-      <li>電撃: 30%で麻痺させる</li>
-      <li>毒液: 70%で猛毒にする</li>
-      <li>呪詛: 100%で衰弱させる</li>
-      <li>汚染: 30%で被曝させる</li>
-      <li>奥義: 究極召喚専用、超威力（1回）</li>
-    </ul>
+    1P: <input id="player1Name" placeholder="1P" style="width:100px; font-size:18px; padding:5px;">
+    2P: <input id="player2Name" placeholder="2P" style="width:100px; font-size:18px; padding:5px;">
   </div>
   <button onclick="closeOptions()" style="width:100%; margin-top:15px;">閉じる</button>
 </div>
 
 <div id="game" style="display:none;">
-  <div id="setupPanel" class="panel">
-    数字: <input id="barcodeInput" type="tel" style="width:120px; padding:10px; font-size:18px;">
-    <button onclick="manualInput()">召喚</button><br>
-    <button onclick="randomGen()">ランダム</button>
-    <button onclick="scan()">スキャン</button>
+  <div class="header-nav">
+    <button onclick="goTitle()" style="padding:8px 15px; font-size:14px; background:#8b0000;">終了</button>
+    <div id="gameModeLabel" style="font-size:18px; font-weight:bold; color: var(--gold);">PVP</div>
   </div>
 
+  <div id="setupPanel" class="panel">
+    バーコード数字: <input id="barcodeInput" type="tel" style="width:120px; padding:10px; font-size:18px;">
+    <button onclick="manualInput()">召喚</button><br>
+    <button onclick="randomGen()" style="background:#2e8b57; font-size:16px;">ランダム召喚</button>
+    <button onclick="scan()" style="background:#483d8b; font-size:16px;">スキャン召喚</button>
+  </div>
+  
   <div id="reader"></div>
 
   <div id="battleArea">
     <div id="turn"></div>
     <div id="chars"></div>
     <div id="skills" class="panel"></div>
-    <button id="startBattleBtn" style="display:none; background: orange;" onclick="startBattle()">バトル開始</button>
+    <button id="startBattleBtn" style="display:none;" onclick="startBattle()">バトル開始</button>
     <div id="postBattleBtns" style="display:none; width:100%;">
       <button onclick="rematch()" style="background:#2e8b57; width:45%;">再戦する</button>
-      <button onclick="goTitle()" style="background:#b22222; width:45%;">終了</button>
+      <button onclick="resetGame()" style="background:#b22222; width:45%;">リセット</button>
     </div>
   </div>
 </div>
@@ -127,7 +126,7 @@ function createHash(code){
 
 function assignSkills(hash, rarity){
   let pool = [
-    {name:"強打", power:1.8, miss:0.25}, {name:"魔法", power:1.4, miss:0.15},
+    {name:"強打", power:1.8, miss:0.30}, {name:"魔法", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05}, {name:"憤怒", buffAtk:1.3},
     {name:"鉄壁", buffDef:1.3}, {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93}, {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
@@ -148,11 +147,11 @@ function genCharacter(code=""){
   let r = (h % 100) / 100;
   let rarity = r < 0.04 ? "ssr" : (r < 0.24 ? "rare" : "common");
   let atk = 40 + (h % 15), def = 20 + (h % 10), hp = 300 + (h % 70);
-  if(rarity==="rare"){ atk*=1.2; def*=1.2; hp*=1.2; }
-  if(rarity==="ssr"){ atk*=1.4; def*=1.4; hp*=1.4; }
+  if(rarity==="rare"){ atk*=1.15; def*=1.15; hp*=1.15; }
+  if(rarity==="ssr"){ atk*=1.3; def*=1.3; hp*=1.3; }
   return {
-    name: code ? "モンスター" + code.slice(-3) : "モンスター" + (h%1000), 
-    rarity, atk:Math.floor(atk), def:Math.floor(def), hp:Math.floor(hp), maxHp:Math.floor(hp),
+    name: `モンスター${h % 1000}`, rarity,
+    atk:Math.floor(atk), def:Math.floor(def), hp:Math.floor(hp), maxHp:Math.floor(hp),
     tempAtk:Math.floor(atk), tempDef:Math.floor(def), status:null,
     sprite: IMAGES[rarity][h % IMAGES[rarity].length],
     skills: assignSkills(h, rarity)
@@ -163,11 +162,7 @@ async function addChar(code=""){
   if(characters.length>=2) return;
   if(scanner){ await scanner.stop().catch(()=>{}); scanner.clear(); scanner=null; }
   let c = genCharacter(code);
-  let summonTxt = "～ 召喚 ～";
-  if(c.rarity==="rare") summonTxt = "～ 上位召喚 ～";
-  if(c.rarity==="ssr") summonTxt = "✨ 究極召喚 ✨";
-
-  showEffect(summonTxt + "<br>" + c.name + " が現れた", ()=>{
+  showEffect(c.name + " が現れた", ()=>{
     characters.push(c); hpVisual.push(c.hp);
     render();
     if(characters.length==2) document.getElementById("startBattleBtn").style.display="block";
@@ -202,7 +197,7 @@ function render(){
           <span class="hp-text">❤️ ${Math.floor(c.hp)} / ${c.maxHp}</span>
           <div class="hpWrap"><div class="hpNow" style="width:${hpP}%;background:${color}"></div></div>
           <div class="stats-info"><span>⚔️${Math.floor(c.tempAtk)}</span> <span>🛡️${Math.floor(c.tempDef)}</span></div>
-          <div class="status-badge" style="color:${sInfo.c}">${sInfo.t}</div>
+          <div class="status-badge" style="color:${sInfo.c}">状態：${sInfo.t}</div>
         </div>
       </div>`;
   });
@@ -219,7 +214,7 @@ function showEffect(msg, cb){
 function startBattle(){
   document.getElementById("setupPanel").style.display="none";
   document.getElementById("startBattleBtn").style.display="none";
-  current = 0;
+  current = Math.random() < 0.5 ? 0 : 1;
   battleStarted=true; animateHP(); proceedTurn();
 }
 
@@ -232,46 +227,23 @@ function showSkills(){
 function useSkill(i){
   if(!battleStarted || waitingForCPU) return;
   let a=characters[current], d=characters[1-current], s=a.skills[i];
-  
-  if(s.name==="奥義" && s.used){
-    showEffect("奥義は１回しか使えない ！！");
-    return;
-  }
+  if(s.name==="奥義" && s.used) return;
   if(s.name==="奥義") s.used=true;
-
   waitingForCPU = true;
   let name = current == 0 ? player1NameVal : player2NameVal;
-  let enemy = current == 0 ? player2NameVal : player1NameVal;
-  let msg = name + " が " + s.name + " を使った";
-
-  if(s.miss && Math.random()<s.miss){ 
-    msg += `<br><br><span class="dmg-text" style="color:var(--blue)">Miss ！！</span>`; 
-  } else {
-    if(s.instant && Math.random()<s.instant){ d.hp = 0; msg += "<br><span style='color:purple;'>即死 ！！</span>"; }
-    if(s.heal){ 
-      let h=Math.floor(a.maxHp*(0.07 + Math.random()*0.08)); 
-      a.hp=Math.min(a.maxHp, a.hp+h); 
-      a.tempDef *= 1.1; 
-      msg+=`<br>${h} の回復`; 
-    }
-    if(s.buffAtk) { a.tempAtk *= 1.3; msg += "<br>攻撃力アップ！！"; }
-    if(s.buffDef) { a.tempDef *= 1.3; msg += "<br>防御力アップ！！"; }
-    if(s.debuffAtk) { d.tempAtk *= 0.93; msg += "<br>相手の攻撃力ダウン！！"; }
-    if(s.debuffDef) { d.tempDef *= 0.93; msg += "<br>相手の防御力ダウン！！"; }
-
+  let msg = name + " の " + s.name;
+  if(s.miss && Math.random()<s.miss){ msg += `<br><span class="dmg-text" style="color:var(--blue)">MISS</span>`; } else {
+    if(s.instant && Math.random()<s.instant){ d.hp = 0; msg += "<br><b style='color:red'>即死</b>"; }
+    if(s.heal){ let h=Math.floor(a.maxHp*0.1); a.hp=Math.min(a.maxHp, a.hp+h); a.tempDef*=1.1; msg+=`<br>回復 ＆ 防護`; }
+    if(s.buffAtk) { a.tempAtk *= 1.3; msg += "<br>攻撃上昇"; }
     if(s.power){
       let crit = Math.random() < 0.05, ran = 0.9 + Math.random() * 0.2;
       let dmg = Math.max(1, Math.floor((a.tempAtk - d.tempDef/2) * s.power * (crit ? 2 : 1) * ran));
       d.hp = Math.max(0, d.hp - dmg);
-      if(crit) msg += `<br><br><span class="dmg-text" style="color:var(--gold)">Critical ！！</span>`;
-      else msg += `<br><br><span style="font-size:1.2em; font-weight:bold;">Hit ！！</span>`;
-      msg += `<br>${dmg} のダメージ`;
+      if(crit) msg += `<br><span class="dmg-text" style="color:var(--gold)">CRITICAL</span>`;
+      msg += `<br><span class="dmg-text">HIT ${dmg}</span>`;
     }
-    if(s.status && !d.status && Math.random()<(s.rate||1)) {
-      d.status=s.status;
-      let stT = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" }[d.status];
-      msg += `<br>${enemy} は ${stT} になった`;
-    }
+    if(s.status && !d.status && Math.random()<(s.rate||1)) d.status=s.status;
   }
   render();
   showEffect(msg, ()=>{ if(d.hp<=0) pendingWin=name; waitingForCPU=false; nextTurn(); });
@@ -281,58 +253,21 @@ function nextTurn(){
   if(pendingWin){ showWin(pendingWin); return; }
   current = 1 - current;
   let c = characters[current], name = current==0?player1NameVal:player2NameVal;
-  let enemy = current==0?player2NameVal:player1NameVal;
-
-  // --- 状態異常ロジック (旧バージョン完全再現) ---
-  
-  // ⚡麻痺
-  if(c.status==="paralyze"){
-    showEffect(name + " は麻痺で動けない", ()=>{ c.status = null; nextTurn(); });
-    return;
-  }
-
-  // ☠猛毒
-  if(c.status==="poison"){
-    let dmg = Math.floor(c.maxHp * 0.04);
-    c.hp = Math.max(0, c.hp - dmg);
-    render();
-    showEffect(name + " は猛毒で " + dmg + "ダメージ !!", ()=>{
-      if(c.hp <= 0) showWin(enemy); else proceedTurn();
+  if(c.status==="paralyze"){ showEffect(name + " は麻痺している", ()=>{ c.status = null; nextTurn(); }); return; }
+  if(c.status){
+    let dmg = Math.floor(c.maxHp*0.04);
+    c.hp = Math.max(0, c.hp-dmg); render();
+    showEffect(name + " 状態ダメージ<br><span class='dmg-text'>"+dmg+"</span>", ()=>{
+      if(c.hp<=0) showWin(current==0?player2NameVal:player1NameVal); else proceedTurn();
     });
     return;
   }
-
-  // 🩻衰弱
-  if(c.status==="weaken"){
-    let dmg = Math.floor(c.maxHp * 0.04);
-    c.hp = Math.max(0, c.hp - dmg);
-    c.tempAtk *= 0.95;
-    c.tempDef *= 0.95;
-    render();
-    showEffect(`${name}は衰弱している<br>${dmg} のダメージ！！<br>攻撃力と防御力が下がった！！`, ()=>{
-      if(c.hp <= 0) showWin(enemy); else proceedTurn();
-    });
-    return;
-  }
-
-  // ☢被曝
-  if(c.status==="irradiate"){
-    let dmg = Math.floor(c.maxHp * 0.03);
-    c.hp = Math.max(0, c.hp - dmg);
-    c.tempDef *= 0.8;
-    render();
-    showEffect(`${name}は被曝している<br>${dmg} のダメージ！！<br>防御力が下がった！！`, ()=>{
-      if(c.hp <= 0) showWin(enemy); else proceedTurn();
-    });
-    return;
-  }
-
   proceedTurn();
 }
 
 function proceedTurn(){ render(); showSkills(); if(gameMode==="cpu" && current===1) setTimeout(()=>useSkill(Math.floor(Math.random()*characters[1].skills.length)), 600); }
 function animateHP(){ if(animRunning) return; animRunning=true; function loop(){ characters.forEach((c,i)=>{ if(hpVisual[i]!==undefined) hpVisual[i]+=(c.hp-hpVisual[i])*0.15; }); render(); requestAnimationFrame(loop); } loop(); }
-function showWin(w){ battleStarted=false; document.getElementById("skills").innerHTML=""; document.getElementById("postBattleBtns").style.display="flex"; showEffect(w + " の勝利！！"); }
+function showWin(w){ battleStarted=false; document.getElementById("skills").innerHTML=""; document.getElementById("postBattleBtns").style.display="flex"; showEffect(w + " の勝利"); }
 
 function resetGame(){
   characters=[]; hpVisual=[]; battleStarted=false; pendingWin=null;
@@ -343,8 +278,10 @@ function resetGame(){
 function rematch(){ characters.forEach(c=>{ c.hp=c.maxHp; c.status=null; c.tempAtk=c.atk; c.tempDef=c.def; c.skills.forEach(s=>{if(s.name==="奥義")s.used=false;}); }); hpVisual = characters.map(c=>c.hp); pendingWin=null; document.getElementById("postBattleBtns").style.display="none"; startBattle(); }
 
 async function goTitle(){
-  if(scanner){ await scanner.stop().catch(()=>{}); scanner.clear(); scanner=null; }
-  resetGame(); document.getElementById("game").style.display="none"; document.getElementById("title").style.display="block";
+  if(confirm("敵前逃亡するつもりか？")){
+    if(scanner){ await scanner.stop().catch(()=>{}); scanner.clear(); scanner=null; }
+    resetGame(); document.getElementById("game").style.display="none"; document.getElementById("title").style.display="block";
+  }
 }
 
 function startMode(m){
