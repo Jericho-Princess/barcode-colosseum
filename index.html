@@ -85,7 +85,7 @@ th, td { border:1px solid #666; padding:8px; text-align:left; }
   </div>
 
   <div id="setupPanel" class="panel">
-    数字: <input id="barcodeInput" type="tel" style="width:120px; padding:10px; font-size:18px;">
+    バーコード数字: <input id="barcodeInput" type="tel" style="width:120px; padding:10px; font-size:18px;">
     <button onclick="manualInput()">召喚</button><br>
     <button onclick="randomGen()" style="background:#2e8b57; font-size:16px;">ランダム召喚</button>
     <button onclick="scan()" style="background:#483d8b; font-size:16px;">スキャン召喚</button>
@@ -150,7 +150,7 @@ function genCharacter(code=""){
   if(rarity==="rare"){ atk*=1.15; def*=1.15; hp*=1.15; }
   if(rarity==="ssr"){ atk*=1.3; def*=1.3; hp*=1.3; }
   return {
-    name: `バーコードモンスター(${h % 1000})`, rarity,
+    name: `モンスター${h % 1000}`, rarity,
     atk:Math.floor(atk), def:Math.floor(def), hp:Math.floor(hp), maxHp:Math.floor(hp),
     tempAtk:Math.floor(atk), tempDef:Math.floor(def), status:null,
     sprite: IMAGES[rarity][h % IMAGES[rarity].length],
@@ -257,7 +257,7 @@ function nextTurn(){
   if(c.status){
     let dmg = Math.floor(c.maxHp*0.04);
     c.hp = Math.max(0, c.hp-dmg); render();
-    showEffect(name + " 状態ダメージ<br><span class='dmg-text'>💥 "+dmg+"</span>", ()=>{
+    showEffect(name + " 状態ダメージ<br><span class='dmg-text'>"+dmg+"</span>", ()=>{
       if(c.hp<=0) showWin(current==0?player2NameVal:player1NameVal); else proceedTurn();
     });
     return;
@@ -278,7 +278,7 @@ function resetGame(){
 function rematch(){ characters.forEach(c=>{ c.hp=c.maxHp; c.status=null; c.tempAtk=c.atk; c.tempDef=c.def; c.skills.forEach(s=>{if(s.name==="奥義")s.used=false;}); }); hpVisual = characters.map(c=>c.hp); pendingWin=null; document.getElementById("postBattleBtns").style.display="none"; startBattle(); }
 
 async function goTitle(){
-  if(confirm("戻りますか？")){
+  if(confirm("敵前逃亡するつもりか？")){
     if(scanner){ await scanner.stop().catch(()=>{}); scanner.clear(); scanner=null; }
     resetGame(); document.getElementById("game").style.display="none"; document.getElementById("title").style.display="block";
   }
