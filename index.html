@@ -2,106 +2,113 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バーコードコロシアム</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <style>
-:root { --purple: #ff00ff; --green: #7cfc00; --red: #ff4d4d; --gold: #ffd700; --blue: #4da6ff; }
-body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;overflow-x:hidden;text-shadow:0 0 5px black;}
-.panel{background:rgba(0,0,0,0.5);padding:10px;margin:8px;border-radius:12px;border:1px solid #444;}
-#turn{font-size:28px;margin:8px 0;font-weight:bold;color:var(--gold);min-height:36px;}
-#chars { display: flex; justify-content: center; gap: 8px; margin-top:10px;}
-.char {
-  border: 6px solid #999; border-radius: 18px; padding: 12px;
-  width: 48%; max-width: 200px; height: 380px; 
-  background: rgba(0,0,0,0.6); box-sizing: border-box; 
-  display: flex; flex-direction: column;
-}
+body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;text-align:center;text-shadow:0 0 5px black;}
+.panel{background:rgba(0,0,0,0.5);padding:15px;margin:10px;border-radius:15px;font-size:18px;}
+#turn{font-size:32px;margin:10px 0;}
+.char{border:5px solid #999;border-radius:15px;padding:10px;margin:10px;display:inline-block;width:140px;height:320px;box-sizing:border-box;}
 .common{border-color:#cd7f32;}
 .rare{border-color:silver;}
-.ssr{border-color:var(--gold);box-shadow:0 0 25px var(--gold);}
-.img-box { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 160px; margin: 5px 0; }
-.char img{ width: auto; height: auto; max-width: 100%; max-height: 180px; image-rendering: pixelated; }
-.char-name { font-size: 14px; font-weight: bold; display: block; height: 1.4em; overflow: hidden; margin-bottom: 5px; border-bottom: 1px solid #666; }
-.hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; display: block; }
-.hpWrap{background:#222;height:20px;border-radius:10px;overflow:hidden;margin:8px 0;position:relative; border:1px solid #555;}
-.hpNow{background:lime;height:100%;transition:width 0.3s linear;}
-.status-badge{font-size:18px;margin-top:8px;font-weight:bold;min-height:26px;}
-.stats-info { display:flex; justify-content: space-around; background:rgba(0,0,0,0.5); border-radius:8px; padding:8px; margin-top:8px; font-size: 18px; font-weight:bold; }
-#effect {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 92%; max-width: 450px; background: rgba(0,0,0,0.95);
-  padding: 35px; border-radius: 20px; border: 3px solid #aaa;
-  z-index: 5000; font-size: 28px; box-shadow: 0 0 50px black;
+.ssr{border-color:gold;box-shadow:0 0 15px gold;}
+.hpWrap{background:#222;height:15px;position:relative;}
+.hpNow{background:lime;height:15px;transition:width 0.5s linear;}
+#gameContent{display:flex;flex-direction:column;align-items:center;}
+#charsAndSkills{display:flex;flex-direction:row;justify-content:center;align-items:flex-start;flex-wrap:wrap;}
+#skills{margin-left:20px;}
+#effect{
+  position:fixed;
+  top:30%;
+  left:50%;
+  transform:translate(-50%,0);
+  font-size:28px;
+  z-index:999;
+  background:rgba(0,0,0,0.8);
+  padding:20px;
+  border-radius:15px;
 }
-.dmg-text { font-size: 42px; font-weight: bold; display: block; margin: 15px 0; color: var(--red); }
-button{font-size:20px;padding:14px 18px;margin:5px;border-radius:12px;background:#444;color:white;border:none;box-shadow:0 5px #111; cursor:pointer;}
-button:active{transform:translateY(2px);box-shadow:0 2px #111;}
-.skillBtn{width:46%; margin:5px; font-size:20px; font-weight: bold; padding: 20px 5px;}
-#options { position: fixed; top:0; left:0; width:100%; height:100%; background:#3b2f2f; z-index:4000; overflow-y:auto; padding:25px; box-sizing:border-box; display:none;}
+
+/* ⭐スマホ用 */
+@media (max-width: 600px){
+  #effect{
+    font-size:18px;
+    padding:15px;
+    width:80%;
+  }
+}
+.skillBtn{margin:10px;padding:15px 25px;font-size:20px;border-radius:10px;}
+button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
+input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
+.status{font-size:16px;margin-top:5px;}
 </style>
 </head>
 <body>
 
-<div id="title">
-  <div class="panel">
-    <div style="font-size: 36px; font-weight: bold; margin: 20px 0; color: var(--gold);">BARCODE<br>COLOSSEUM</div>
-    <button onclick="startMode('pvp')">プレイヤー対戦</button><br>
-    <button onclick="startMode('cpu')">CPU対戦</button><br>
-    <button onclick="showOptions()">設定</button>
-  </div>
+<div id="title" class="panel">
+
+  <img src="img/logo.png" style="width:320px; margin-bottom:20px;"><br>
+
+  <button onclick="startPVP()">プレイヤー対戦</button><br><br>
+  <button onclick="startCPU()">CPU対戦</button><br><br>
+  <button onclick="showOptions()">オプション</button>
 </div>
 
-<div id="options">
-  <h2>設定</h2>
-  <div class="panel">
-    1P名: <input id="player1Name" placeholder="1P" style="width:100px; font-size:18px; padding:5px;">
-    2P名: <input id="player2Name" placeholder="2P" style="width:100px; font-size:18px; padding:5px;">
-    <h3 style="text-align:left; margin-top:20px;">技一覧</h3>
-    <ul style="text-align:left; font-size:14px;">
-      <li>攻撃: 標準攻撃、必中</li>
-      <li>強打: 高威力、25%で失敗</li>
-      <li>魔法: 高威力、15%で失敗</li>
-      <li>毒針: 低威力、5%で即死</li>
-      <li>憤怒: 自身の攻撃力を強化</li>
-      <li>鉄壁: 自身の防御力を強化</li>
-      <li>再生: 体力回復 ＆ 防御少し強化</li>
-      <li>疫病: 相手の攻・防を低下</li>
-      <li>電撃: 30%で麻痺させる</li>
-      <li>毒液: 70%で猛毒にする</li>
-      <li>呪詛: 100%で衰弱させる</li>
-      <li>汚染: 30%で被曝させる</li>
-      <li>奥義: 究極召喚専用、超威力（1回）</li>
-    </ul>
-  </div>
-  <button onclick="closeOptions()" style="width:100%; margin-top:15px;">閉じる</button>
+<div id="options" class="panel" style="display:none;">
+  プレイヤー1: <input id="player1Name" placeholder="1P"><br><br>
+  プレイヤー2: <input id="player2Name" placeholder="2P"><br><br>
+  <h3>技一覧</h3>
+  <ul style="text-align:left">
+    <li>攻撃: 通常の攻撃、必ず命中する</li>
+  <li>強打: 威力の高い攻撃、25%で失敗する</li>
+  <li>魔法: 威力が少し高い攻撃、15%で失敗する</li>
+  <li>毒針: 威力が小さい攻撃、5%で相手は即死する</li>
+  <li>憤怒: 自身の攻撃力を強化する</li>
+  <li>鉄壁: 自身の防御力を強化する</li>
+  <li>再生: 自身の体力が回復し、防御力も少しだけ強化する</li>
+  <li>疫病: 相手の攻撃力・防御力を低下させる</li>
+  <li>電撃: 威力が少し高い攻撃、相手を30%で麻痺状態にする</li>
+  <li>毒液: 威力が小さい攻撃、相手を70%で猛毒状態にする</li>
+  <li>呪詛: 相手を100%衰弱状態にさせる</li>
+  <li>汚染: 威力が小さい攻撃、相手を30%で被曝状態にする</li>
+  <li>奥義: 究極召喚獣専用の必殺、絶大な威力を持つ</li>
+  </ul>
+  <button onclick="closeOptions()">閉じる</button>
 </div>
 
 <div id="game" style="display:none;">
-  <div id="setupPanel" class="panel">
-    数字: <input id="barcodeInput" type="tel" style="width:120px; padding:10px; font-size:18px;">
-    <button onclick="manualInput()">召喚</button><br>
-    <button onclick="randomGen()">ランダム</button>
-    <button onclick="scan()">スキャン</button>
-  </div>
+  <button onclick="goTitle()">← タイトルに戻る</button><br><br>
+
+  <div class="panel">
+    バーコード数字を入力: <input id="barcodeInput">
+    <button onclick="manualInput()">召喚</button><br><br>
+    <button onclick="randomGen()">ランダム召喚</button>
+    <button onclick="scan()">スキャン召喚</button>
+    <button onclick="resetChars()">リセット</button></div>
+　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
+
   <div id="reader"></div>
-  <div id="battleArea">
-    <div id="turn"></div>
-    <div id="chars"></div>
-    <div id="skills" class="panel"></div>
-    <button id="startBattleBtn" style="display:none; background: orange;" onclick="startBattle()">バトル開始</button>
-    <div id="postBattleBtns" style="display:none; width:100%;">
-      <button onclick="rematch()" style="background:#2e8b57; width:45%;">再戦する</button>
-      <button onclick="goTitle()" style="background:#b22222; width:45%;">終了</button>
+
+  <div id="gameContent">
+    <div id="turn" class="panel"></div>
+    <div id="charsAndSkills">
+      <div id="chars"></div>
+      <div id="skills" class="panel"></div>
     </div>
+    <button id="startBattleBtn" style="display:none;" onclick="startBattle()">バトル開始</button>
   </div>
 </div>
 
 <script>
+// スキャナー用の変数を一番上に追加
 let characters=[], current=0, gameMode="pvp";
 let player1NameVal="1P", player2NameVal="2P";
 let battleStarted=false, waitingForCPU=false;
-let pendingWin = null, hpVisual = [], animRunning = false, scanner = null;
+let pendingWin = null;
+let hpVisual = [];
+let animRunning = false;
+let scanner = null; // ⭐ これが必要
 
 const IMAGES={
   common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
@@ -109,197 +116,454 @@ const IMAGES={
   ssr:Array.from({length:3},(_,i)=>`img/s${i+1}.png`)
 };
 
-function createHash(code){
-  let h = 0;
-  for(let i=0;i<code.length;i++){ h = (h << 5) - h + code.charCodeAt(i); h |= 0; }
-  h ^= (h << 13); h ^= (h >> 17); h ^= (h << 5);
-  return (h * 2654435761) >>> 0;
+function chaosHash(h){
+  h ^= (h << 13);
+  h ^= (h >> 17);
+  h ^= (h << 5);
+  h = (h * 2654435761) >>> 0;
+  h ^= (h >> 16);
+  return h >>> 0;
 }
 
-function assignSkills(hash, rarity){
+function assignSkills(r){
+  let skills = [{name:"攻撃", power:1.0}];
   let pool = [
-    {name:"強打", power:1.8, miss:0.25}, {name:"魔法", power:1.4, miss:0.15},
-    {name:"毒針", power:0.5, instant:0.05}, {name:"憤怒", buffAtk:1.3},
-    {name:"鉄壁", buffDef:1.3}, {name:"再生", heal:0.1, buffDef:1.1},
-    {name:"疫病", debuffAtk:0.93, debuffDef:0.93}, {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"強打", power:1.8, miss:0.30},
+    {name:"魔法", power:1.4, miss:0.15},
+    {name:"毒針", power:0.5, instant:0.05},
+    {name:"憤怒", buffAtk:1.3},
+    {name:"鉄壁", buffDef:1.3},
+    {name:"再生", heal:0.1, buffDef:1.1},
+    {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
-    {name:"呪詛", status:"weaken"}, {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
+    {name:"呪詛", status:"weaken"},
+    {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
   ];
-  let s = [{name:"攻撃", power:1.0}];
-  let i1 = hash % pool.length;
-  let i2 = (hash + 7) % pool.length;
-  if(i1===i2) i2 = (i2 + 1) % pool.length;
-  s.push(pool[i1], pool[i2]);
-  if(rarity==="ssr") s.push({name:"奥義", power:3.0, used:false});
-  return s;
+  skills.push(pool[0], pool[1]);
+  if(r === "ssr"){ skills.push({name:"奥義", power:3, used:false}); }
+  return skills;
 }
 
-function genCharacter(code=""){
-  let h = code ? createHash(code) : Math.floor(Math.random()*999999);
-  let r = (h % 100) / 100;
-  let rarity = r < 0.04 ? "ssr" : (r < 0.24 ? "rare" : "common");
-  let atk = 40 + (h % 15), def = 20 + (h % 10), hp = 300 + (h % 70);
-  if(rarity==="rare"){ atk*=1.2; def*=1.2; hp*=1.2; }
-  if(rarity==="ssr"){ atk*=1.4; def*=1.4; hp*=1.4; }
-  return {
-    name: code ? "モンスター" + code.slice(-3) : "モンスター" + (h%1000), 
-    rarity, atk:Math.floor(atk), def:Math.floor(def), hp:Math.floor(hp), maxHp:Math.floor(hp),
-    tempAtk:Math.floor(atk), tempDef:Math.floor(def), status:null,
-    sprite: IMAGES[rarity][h % IMAGES[rarity].length],
-    skills: assignSkills(h, rarity)
-  };
+function gen(code=""){
+  let hash=code?code.split("").reduce((a,b)=>a+b.charCodeAt(0),0):Math.floor(Math.random()*10000);
+  let r=Math.random();
+  let rarity=r<0.04?"ssr":r<0.24?"rare":"common";
+  let sprite=IMAGES[rarity][Math.floor(hash)%IMAGES[rarity].length];
+  let atk=40+(hash%15),def=20+(hash%10),hp=300+(hash%70);
+  if(rarity=="rare"){atk*=1.15;def*=1.15;hp*=1.15;}
+  if(rarity=="ssr"){atk*=1.3;def*=1.3;hp*=1.3;}
+  return { name:"モンスター", rarity, sprite, hp, maxHp:hp, atk, def, tempAtk: atk, tempDef: def, skills:assignSkillsRandom(rarity), status:null };
 }
 
+function manualInput(){let v=document.getElementById("barcodeInput").value;if(!v)return;addChar(v);}
+function randomGen(){addChar();}
+
+// ⭐ async を追加して scanner の停止を待てるように修正
 async function addChar(code=""){
-  if(characters.length>=2) return;
-  if(scanner){ try{ await scanner.stop(); }catch(e){} scanner.clear(); scanner=null; }
-  let c = genCharacter(code);
-  let summonTxt = c.rarity==="ssr" ? "✨ 究極召喚 ✨" : (c.rarity==="rare" ? "～ 上位召喚 ～" : "～ 召喚 ～");
-  showEffect(summonTxt + "<br>" + c.name + " が現れた", ()=>{
-    characters.push(c); hpVisual.push(c.hp);
+  if(characters.length>=2)return;
+  
+  // スキャナーが動いていたら止める
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;
+  }
+
+  let c = code ? createCharacterFromBarcode(code) : gen();
+  let summonText = "～　召喚　～";
+  if(c.rarity==="rare") summonText = "～　上位召喚　～";
+  if(c.rarity==="ssr") summonText = "✨ 　究極召喚　 ✨";
+
+  showEffect(summonText + "<br>" + c.name + " が現れた", ()=>{
+    characters.push(c);
+    hpVisual.push(c.hp); 
     render();
-    if(characters.length==2) document.getElementById("startBattleBtn").style.display="block";
+    if(characters.length==2) document.getElementById("startBattleBtn").style.display="inline-block";
   });
 }
 
-function manualInput(){ let v=document.getElementById("barcodeInput").value; if(v) addChar(v); }
-function randomGen(){ addChar(""); }
+function assignSkillsRandom(rarity){
+  let skills = [{name:"攻撃", power:1.0}];
+  let pool = [
+    {name:"強打", power:1.8, miss:0.30},
+    {name:"魔法", power:1.4, miss:0.15},
+    {name:"毒針", power:0.5, instant:0.05},
+    {name:"憤怒", buffAtk:1.3},
+    {name:"鉄壁", buffDef:1.3},
+    {name:"再生", heal:0.1, buffDef:1.1},
+    {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
+    {name:"呪詛", status:"weaken"},
+    {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
+  ];
+  let i1 = Math.floor(Math.random()*pool.length);
+  let i2 = Math.floor(Math.random()*pool.length);
+  if(i1 === i2){ i2 = (i2 + 1) % pool.length; }
+  skills.push(pool[i1], pool[i2]);
+  if(rarity==="ssr"){ skills.push({name:"奥義", power:3, used:false}); }
+  return skills;
+}
 
-function scan() {
-  if (scanner) return;
+function assignSkillsFixed(hash, rarity){
+  let skills = [{name:"攻撃", power:1.0}];
+  let pool = [
+    {name:"強打", power:1.8, miss:0.30},
+    {name:"魔法", power:1.4, miss:0.15},
+    {name:"毒針", power:0.5, instant:0.05},
+    {name:"憤怒", buffAtk:1.3},
+    {name:"鉄壁", buffDef:1.3},
+    {name:"再生", heal:0.1, buffDef:1.1},
+    {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
+    {name:"呪詛", status:"weaken"},
+    {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
+  ];
+  let h1 = mixHash(hash);
+  let h2 = mixHash(hash + 999);
+  let i1 = h1 % pool.length;
+  let i2 = h2 % pool.length;
+  if(i1 === i2){ i2 = (i2 + 1) % pool.length; }
+  skills.push(pool[i1], pool[i2]);
+  if(rarity==="ssr"){ skills.push({name:"奥義", power:3, used:false}); }
+  return skills;
+}
+
+function mixHash(h){
+  h ^= (h << 13);
+  h ^= (h >> 17);
+  h ^= (h << 5);
+  return h >>> 0;
+}
+
+function scan(){
+  if(scanner) return; // 二重起動防止
   scanner = new Html5Qrcode("reader");
-  scanner.start({ facingMode: "environment" }, { fps: 20, qrbox: { width: 250, height: 150 } }, txt => { 
-    if (navigator.vibrate) navigator.vibrate(50);
-    addChar(txt); 
-  }).catch(e => { alert("カメラ失敗"); scanner = null; });
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 15,
+      qrbox: { width: 300, height: 150 },
+      formatsToSupport: [ 0, 1, 2 ] // EAN_13, EAN_8, CODE_128 (ライブラリのEnum値)
+    },
+    txt => {
+      navigator.vibrate?.(50);
+      addChar(txt);
+      // addChar 内で scanner.stop() するのでここでは呼ばない
+    },
+    err => {}
+  );
+}
+
+function createHash(code){
+  let h = 0;
+  for(let i=0;i<code.length;i++){
+    h = (h << 5) - h + code.charCodeAt(i);
+    h |= 0;
+  }
+  h = chaosHash(h);
+  h ^= code.length * 1234567;
+  h ^= code.charCodeAt(0) << 8;
+  h ^= code.charCodeAt(code.length-1);
+  return h >>> 0;
+}
+
+function createCharacterFromBarcode(code){
+  let hash = createHash(code);
+  let r = (hash % 100) / 100;
+  let rarity = "common";
+  if(r < 0.04) rarity = "ssr";
+  else if(r < 0.24) rarity = "rare";
+  let atk = 40 + (hash % 15);
+  let def = 20 + (hash % 10);
+  let hp  = 300 + (hash % 70);
+  if(rarity==="rare"){ atk *= 1.2; def *= 1.2; hp *= 1.2; }
+  if(rarity==="ssr"){ atk *= 1.4; def *= 1.4; hp *= 1.4; }
+  return {
+    name: "バーコードモンスター" + code.slice(-3),
+    code: code, rarity: rarity,
+    atk: Math.floor(atk), def: Math.floor(def), maxHp: Math.floor(hp), hp: Math.floor(hp),
+    tempAtk: Math.floor(atk), tempDef: Math.floor(def),
+    sprite: IMAGES[rarity][hash % IMAGES[rarity].length],
+    skills: assignSkillsFixed(hash, rarity),
+    status: null
+  };
 }
 
 function render(){
-  if(battleStarted) document.getElementById("turn").innerText = `${current==0?player1NameVal:player2NameVal} のターン`;
+  if(battleStarted){
+    let name = current==0 ? player1NameVal : player2NameVal;
+    document.getElementById("turn").innerText = `${name} のターン`;
+  } else {
+    document.getElementById("turn").innerText = "";
+  }
   let html = "";
   characters.forEach((c,i)=>{
-    let hpP = (hpVisual[i]/c.maxHp)*100;
-    let color = hpP<30?"red":hpP<60?"orange":"lime";
-    let statusMap = { paralyze: {t:"⚡麻痺", c:"var(--gold)"}, poison: {t:"☠️猛毒", c:"var(--purple)"}, weaken: {t:"🩻衰弱", c:"#9370db"}, irradiate: {t:"☢️被曝", c:"var(--green)"} };
-    let sInfo = c.status ? statusMap[c.status] : {t:"健康", c:"#ccc"};
-    html += `
-      <div class="char ${c.rarity}">
-        <b class="char-name">${c.name}</b>
-        <div class="img-box"><img src="${c.sprite}" onerror="this.src='https://via.placeholder.com/100?text=NONE'"></div>
-        <div class="status-area">
-          <span class="hp-text">❤️ ${Math.floor(c.hp)} / ${c.maxHp}</span>
-          <div class="hpWrap"><div class="hpNow" style="width:${hpP}%;background:${color}"></div></div>
-          <div class="stats-info"><span>⚔️${Math.floor(c.tempAtk)}</span> <span>🛡️${Math.floor(c.tempDef)}</span></div>
-          <div class="status-badge" style="color:${sInfo.c}">${sInfo.t}</div>
-        </div>
-      </div>`;
+    let hpP = (hpVisual[i] / c.maxHp) * 100;
+    let color = "lime";
+    if(hpP < 60) color = "orange";
+    if(hpP < 30) color = "red";
+    let statusMap = { paralyze:"⚡麻痺", poison:"☠️猛毒", weaken:"🩻衰弱", irradiate:"☢️被曝" };
+    let statusText = (c.status && statusMap[c.status]) ? "状態：" + statusMap[c.status] : "状態：健康";
+    html += `<div class="char ${c.rarity}"><img src="${c.sprite}" style="width:120px;height:160px"><br>❤️ ${Math.floor(c.hp)} / ${Math.floor(c.maxHp)}<br>⚔️ ${Math.floor(c.tempAtk || c.atk)}<br>🛡 ${Math.floor(c.tempDef || c.def)}<br><div class="hpWrap"><div class="hpNow" style="width:${hpP}%; background:${color}"></div></div><div class="status">${statusText}</div></div>`;
   });
   document.getElementById("chars").innerHTML = html;
 }
 
-function showEffect(msg, cb){
-  let e=document.createElement("div"); e.id="effect";
-  e.innerHTML = msg + "<br><small style='color:#ccc; font-size:16px;'>[ タップ ]</small>";
-  e.onclick = ()=>{ e.remove(); if(cb) cb(); };
+function animateHP(){
+  if(animRunning) return;
+  animRunning = true;
+  function loop(){
+    characters.forEach((c,i)=>{
+      if(hpVisual[i] === undefined) hpVisual[i] = c.hp;
+      hpVisual[i] += (c.hp - hpVisual[i]) * 0.15;
+      if(Math.abs(c.hp - hpVisual[i]) < 0.1) hpVisual[i] = c.hp;
+    });
+    render();
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ⭐ リセット時もスキャナーを止めるように修正
+async function resetChars(){
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;
+  }
+  characters = []; hpVisual = []; current = 0;
+  battleStarted = false; waitingForCPU = false;
+  document.getElementById("chars").innerHTML = "";
+  document.getElementById("skills").innerHTML = "";
+  document.getElementById("turn").innerText = "";
+  document.getElementById("startBattleBtn").style.display = "none";
+}
+
+function showEffect(msg,cb){
+  let old=document.getElementById("effect");
+  if(old) old.remove();
+  let e=document.createElement("div");
+  e.id="effect";
+  e.innerHTML=msg+"<br><small>クリックで進む</small>";
+  e.onclick=()=>{e.remove();if(cb)cb();};
   document.body.appendChild(e);
 }
 
 function startBattle(){
-  document.getElementById("setupPanel").style.display="none";
-  document.getElementById("startBattleBtn").style.display="none";
-  current = 0;
-  battleStarted=true; animateHP(); proceedTurn();
+  if(characters.length < 2) return;
+  current = 0; battleStarted = true; waitingForCPU = false;
+  hpVisual = characters.map(c => c.hp);
+  animateHP(); render(); showSkills(); proceedTurn();
 }
 
 function showSkills(){
-  let c = characters[current], html = "";
-  c.skills.forEach((s,i)=>{ html += `<button class="skillBtn" onclick="useSkill(${i})">${s.name}</button>`; });
-  document.getElementById("skills").innerHTML = html;
+  let c=characters[current];
+  let html="";
+  c.skills.forEach((s,i)=>{
+    html+=`<button class="skillBtn" onclick="useSkill(${i})">${s.name}</button>`;
+  });
+  document.getElementById("skills").innerHTML=html;
 }
 
 function useSkill(i){
-  if(!battleStarted || waitingForCPU) return;
-  let a=characters[current], d=characters[1-current], s=a.skills[i];
-  if(s.name==="奥義" && s.used){ showEffect("奥義は１回しか使えない ！！"); return; }
-  if(s.name==="奥義") s.used=true;
+  if(!battleStarted) return;
+
+  // CPU中の操作防止
+  if(waitingForCPU && gameMode=="pvp") return;
+
+  let a = characters[current];
+  let d = characters[1-current];
+  let s = a.skills[i];
+
   waitingForCPU = true;
-  let name = current == 0 ? player1NameVal : player2NameVal;
+
+  let name = current==0 ? player1NameVal : player2NameVal;
+  let enemy = current==0 ? player2NameVal : player1NameVal;
+
   let msg = name + " が " + s.name + " を使った";
-  if(s.miss && Math.random()<s.miss){ 
-    msg += `<br><br><span class="dmg-text" style="color:var(--blue)">Miss ！！</span>`; 
-  } else {
-    if(s.instant && Math.random()<s.instant){ d.hp = 0; msg += "<br><span style='color:purple;'>即死 ！！</span>"; }
-    if(s.heal){ 
-      let h=Math.floor(a.maxHp*(0.07 + Math.random()*0.08)); 
-      a.hp=Math.min(a.maxHp, a.hp+h); a.tempDef *= 1.1; msg+=`<br>${h} の回復`; 
-    }
-    if(s.buffAtk) { a.tempAtk *= 1.3; msg += "<br>攻撃力アップ！！"; }
-    if(s.buffDef) { a.tempDef *= 1.3; msg += "<br>防御力アップ！！"; }
-    if(s.debuffAtk) { d.tempAtk *= 0.93; msg += "<br>相手の攻撃力ダウン！！"; }
-    if(s.debuffDef) { d.tempDef *= 0.93; msg += "<br>相手の防御力ダウン！！"; }
-    if(s.power){
-      let crit = Math.random() < 0.05, ran = 0.9 + Math.random() * 0.2;
-      let dmg = Math.max(1, Math.floor((a.tempAtk - d.tempDef/2) * s.power * (crit ? 2 : 1) * ran));
-      d.hp = Math.max(0, d.hp - dmg);
-      msg += crit ? `<br><br><span class="dmg-text" style="color:var(--gold)">Critical ！！</span>` : `<br><br><span style="font-size:1.2em; font-weight:bold;">Hit ！！</span>`;
-      msg += `<br>${dmg} のダメージ`;
-    }
-    if(s.status && !d.status && Math.random()<(s.rate||1)) {
-      d.status=s.status;
-      let stT = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" }[d.status];
-      msg += `<br>相手を ${stT} にした！！`;
-    }
+
+  // 🔥 奥義1回制限
+  if(s.name==="奥義" && s.used){
+    showEffect("奥義は１回しか使えない ！！");
+    waitingForCPU = false;
+    return;
   }
+
+  if(s.name==="奥義"){
+    s.used = true;
+  }
+
+  // 🔥 ミス判定 (文字を強調)
+  if(s.miss && Math.random() < s.miss){
+    msg += "<br><br><span style='color:#ff4d4d; font-size:1.5em; font-weight:bold;'>Miss ！！</span>";
+    render();
+
+    showEffect(msg, ()=>{
+      waitingForCPU = false;
+      nextTurn();
+    });
+    return;
+  }
+
+  if(s.instant && Math.random() < s.instant){
+    d.hp = 0;
+    msg += "<br><span style='color:purple;'>即死 ！！</span>";
+  }
+
+  if(s.heal){
+    let rate = 0.07 + Math.random() * 0.08;
+    let heal = Math.floor(a.maxHp * rate);
+    a.hp = Math.min(a.maxHp, a.hp + heal);
+    if(a.tempDef == null) a.tempDef = a.def;
+    a.tempDef *= 1.1;
+    msg += `<br>${heal} の回復`;
+  }
+
+  // バフ・デバフ処理
+  if(s.buffAtk){ a.tempAtk = (a.tempAtk || a.atk) * s.buffAtk; msg += "<br>攻撃力アップ！！"; }
+  if(s.buffDef){ a.tempDef = (a.tempDef || a.def) * s.buffDef; msg += "<br>防御力アップ！！"; }
+  if(s.debuffAtk){ d.tempAtk = (d.tempAtk || d.atk) * s.debuffAtk; msg += "<br>相手の攻撃力ダウン！！"; }
+  if(s.debuffDef){ d.tempDef = (d.tempDef || d.def) * s.debuffDef; msg += "<br>相手の防御力ダウン！！"; }
+
+  if(s.name==="呪詛"){
+    d.status = "weaken";
+  }
+
+  // 🔥 ダメージ処理 (Hit / Critical を強調)
+  if(s.power){
+    let crit = Math.random() < 0.05;
+    let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
+    let dmg = Math.max(1, Math.floor(base));
+
+    if(crit){
+      dmg *= 2;
+      msg += "<br><br><span style='color:gold; font-size:1.5em; font-weight:bold;'>Critical ！！</span>";
+    } else {
+      msg += "<br><br><span style='font-size:1.2em; font-weight:bold;'>Hit ！！</span>";
+    }
+
+    d.hp = Math.max(0, d.hp - dmg);
+    msg += "<br>" + dmg + " のダメージ";
+  }
+
+  // 🔥 状態異常
+  if(s.status && !d.status && Math.random() < (s.rate || 1)){
+    d.status = s.status;
+    let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
+    msg += "<br>" + enemy + " は " + st[d.status] + " になった";
+  }
+
   render();
-  showEffect(msg, ()=>{ if(d.hp<=0) pendingWin=name; waitingForCPU=false; nextTurn(); });
+
+  showEffect(msg, ()=>{
+    if(d.hp <= 0){
+      pendingWin = name;
+    }
+    waitingForCPU = false;
+    nextTurn();
+  });
+}
+
+function proceedTurn(){
+  if(!battleStarted || waitingForCPU) return;
+  let c = characters[current];
+  render(); showSkills();
+  if(gameMode=="cpu" && current==1){
+    setTimeout(()=>{
+      let usable = c.skills.filter(s => !(s.name==="奥義" && s.used));
+      let r = Math.floor(Math.random()*usable.length);
+      useSkill(c.skills.indexOf(usable[r]));
+    },500);
+  }
 }
 
 function nextTurn(){
-  if(pendingWin){ showWin(pendingWin); return; }
+  waitingForCPU = false;
+  if(pendingWin){ showWin(pendingWin); pendingWin = null; return; }
   current = 1 - current;
-  let c = characters[current], name = current==0?player1NameVal:player2NameVal;
-  let enemyName = current==0?player2NameVal:player1NameVal;
+  let c = characters[current];
+  let name = current==0 ? player1NameVal : player2NameVal;
 
+  if(c.status==="poison" || c.status==="weaken" || c.status==="irradiate"){
+    let dmgRate = c.status==="irradiate" ? 0.03 : 0.04;
+    let dmg = Math.floor(c.maxHp * dmgRate);
+    c.hp = Math.max(0, c.hp - dmg);
+    if(c.status==="weaken"){ c.tempAtk = (c.tempAtk || c.atk) * 0.95; c.tempDef = (c.tempDef || c.def) * 0.95; }
+    if(c.status==="irradiate") c.tempDef = (c.tempDef || c.def) * 0.8;
+    render();
+    showEffect(name + " は状態異常ダメージ !!", ()=>{
+      if(c.hp <= 0) showWin(current==0 ? player2NameVal : player1NameVal);
+      else proceedTurn();
+    });
+    return;
+  }
   if(c.status==="paralyze"){
     showEffect(name + " は麻痺で動けない", ()=>{ c.status = null; nextTurn(); });
     return;
   }
-  if(c.status==="poison"){
-    let dmg = Math.floor(c.maxHp * 0.04);
-    c.hp = Math.max(0, c.hp - dmg); render();
-    showEffect(name + " は猛毒に侵されている！！<br><span class='dmg-text'>" + dmg + " ダメージ</span>", ()=>{
-      if(c.hp <= 0) showWin(enemyName); else proceedTurn();
-    });
-    return;
-  }
-  if(c.status==="weaken"){
-    let dmg = Math.floor(c.maxHp * 0.04);
-    c.hp = Math.max(0, c.hp - dmg); c.tempAtk *= 0.95; c.tempDef *= 0.95; render();
-    showEffect(name + " は衰弱している！！<br><span class='dmg-text'>" + dmg + " ダメージ</span><br>能力が低下した！！", ()=>{
-      if(c.hp <= 0) showWin(enemyName); else proceedTurn();
-    });
-    return;
-  }
-  if(c.status==="irradiate"){
-    let dmg = Math.floor(c.maxHp * 0.03);
-    c.hp = Math.max(0, c.hp - dmg); c.tempDef *= 0.8; render();
-    showEffect(name + " は被曝している！！<br><span class='dmg-text'>" + dmg + " ダメージ</span><br>防御力が大幅に下がった！！", ()=>{
-      if(c.hp <= 0) showWin(enemyName); else proceedTurn();
-    });
-    return;
-  }
-  proceedTurn();
+  setTimeout(proceedTurn, 50);
 }
 
-function proceedTurn(){ render(); showSkills(); if(gameMode==="cpu" && current===1) setTimeout(()=>useSkill(Math.floor(Math.random()*characters[1].skills.length)), 600); }
-function animateHP(){ if(animRunning) return; animRunning=true; function loop(){ characters.forEach((c,i)=>{ if(hpVisual[i]!==undefined) hpVisual[i]+=(c.hp-hpVisual[i])*0.15; }); render(); requestAnimationFrame(loop); } loop(); }
-function showWin(w){ battleStarted=false; document.getElementById("skills").innerHTML=""; document.getElementById("postBattleBtns").style.display="flex"; showEffect(w + " の勝利！！"); }
-function resetGame(){ characters=[]; hpVisual=[]; battleStarted=false; pendingWin=null; document.getElementById("turn").innerText=""; document.getElementById("skills").innerHTML=""; document.getElementById("chars").innerHTML=""; document.getElementById("postBattleBtns").style.display="none"; document.getElementById("setupPanel").style.display="block"; }
-function rematch(){ characters.forEach(c=>{ c.hp=c.maxHp; c.status=null; c.tempAtk=c.atk; c.tempDef=c.def; c.skills.forEach(s=>{if(s.name==="奥義")s.used=false;}); }); hpVisual = characters.map(c=>c.hp); pendingWin=null; document.getElementById("postBattleBtns").style.display="none"; startBattle(); }
-async function goTitle(){ if(scanner){ try{ await scanner.stop(); }catch(e){} scanner.clear(); scanner=null; } resetGame(); document.getElementById("game").style.display="none"; document.getElementById("title").style.display="block"; }
-function startMode(m){ player1NameVal=document.getElementById("player1Name").value||"1P"; player2NameVal=m==="cpu"?"CPU":(document.getElementById("player2Name").value||"2P"); gameMode=m; document.getElementById("title").style.display="none"; document.getElementById("game").style.display="block"; }
-function showOptions(){ document.getElementById("options").style.display="block"; }
-function closeOptions(){ document.getElementById("options").style.display="none"; }
+function showWin(w){
+  battleStarted = false; waitingForCPU = false;
+  document.getElementById("skills").innerHTML = "";
+  document.getElementById("turn").innerText = "";
+  document.getElementById("rematchBtn").style.display = "inline-block";
+  showEffect(`${w} の勝利！！`);
+}
+
+function rematch(){
+  characters.forEach(c=>{
+    c.hp = c.maxHp; c.status = null; c.tempAtk = c.atk; c.tempDef = c.def;
+    c.skills.forEach(s=>{ if(s.name==="奥義") s.used=false; });
+  });
+  hpVisual = characters.map(c=>c.hp);
+  current = 0; battleStarted = true; waitingForCPU = false; pendingWin = null;
+  document.getElementById("rematchBtn").style.display = "none";
+  render(); showSkills(); proceedTurn();
+}
+
+// ⭐ タイトルに戻る際もスキャナーを停止
+async function goTitle(){
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;
+  }
+  document.getElementById("game").style.display="none";
+  document.getElementById("title").style.display="block";
+  characters=[];
+  document.getElementById("chars").innerHTML="";
+  document.getElementById("skills").innerHTML="";
+}
+
+function startPVP(){
+  player1NameVal=document.getElementById("player1Name").value||"1P";
+  player2NameVal=document.getElementById("player2Name").value||"2P";
+  gameMode="pvp";
+  document.getElementById("title").style.display="none";
+  document.getElementById("game").style.display="block";
+}
+function startCPU(){
+  player1NameVal=document.getElementById("player1Name").value||"1P";
+  player2NameVal="CPU";
+  gameMode="cpu";
+  document.getElementById("title").style.display="none";
+  document.getElementById("game").style.display="block";
+}
+function showOptions(){
+  document.getElementById("title").style.display="none";
+  document.getElementById("options").style.display="block";
+}
+function closeOptions(){
+  document.getElementById("options").style.display="none";
+  document.getElementById("title").style.display="block";
+}
+
+
 </script>
 </body>
 </html>
