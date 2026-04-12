@@ -42,30 +42,6 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
-
-#reader {
-  position: relative;
-}
-
-/* ライブラリの枠だけ消す */
-#reader video + div {
-  display: none !important;
-}
-
-/* 自作スキャン枠（qrboxと一致） */
-#reader.active::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 280px;
-  height: 90px;
-  transform: translate(-50%, -50%);
-  border: 3px solid red;
-  box-shadow: 0 0 20px red;
-  border-radius: 10px;
-}
-
 </style>
 </head>
 <body>
@@ -112,7 +88,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <button onclick="resetChars()">リセット</button></div>
 　　<button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
 
-  <div id="reader" style="width:300px;height:200px;margin:auto;"></div>
+  <div id="reader"></div>
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
@@ -131,7 +107,6 @@ let battleStarted=false, waitingForCPU=false;
 let pendingWin = null;
 let hpVisual = [];
 let animRunning = false;
-let scanner = null;
 
 const IMAGES={
   common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
@@ -313,61 +288,28 @@ function assignSkillsFixed(hash, rarity){
   return h >>> 0;
 }
 
-async function scan(){
+function scan(){
+  let s = new Html5Qrcode("reader");
 
-document.getElementById("reader").classList.add("active"); // ←追加
-
-  // 既に起動してたら止める
-  if(scanner){
-    await scanner.stop().catch(()=>{});
-    scanner.clear();
-  }
-
-  scanner = new Html5Qrcode("reader");
-
-  const config = {
-    fps: 30,
-    qrbox: { width: 280, height: 90 },
-    aspectRatio: 1.777,
-    disableFlip: true,
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.EAN_8
-    ],
-    experimentalFeatures: {
-      useBarCodeDetectorIfSupported: true
+  s.start(
+    { facingMode: "environment" },
+    {
+      fps: 15,
+      qrbox: { width: 300, height: 150 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128
+      ]
+    },
+    txt => {
+      addChar(txt);
+      s.stop();
+    },
+    err => {
+      // 読み取り中エラー（無視OK）
     }
-  };
-
-  try{
-    // ⭐ 背面カメラ強制
-    await scanner.start(
-      { facingMode: { exact: "environment" } },
-      config,
-      onScanSuccess
-    );
-  }catch(e){
-
-    // ⭐ fallback（ダメなら適当なカメラ）
-    let devices = await Html5Qrcode.getCameras();
-    await scanner.start(
-      devices[0].id,
-      config,
-      onScanSuccess
-    );
-  }
-}
-
-function onScanSuccess(txt){
-  navigator.vibrate?.(50);
-  addChar(txt);
-
-  scanner.stop().then(()=>{
-    scanner.clear();
-    scanner = null;
-
-    document.getElementById("reader").classList.remove("active"); // ←追加
-  });
+  );
 }
 
  function createHash(code){
@@ -594,9 +536,7 @@ function useSkill(i){
 
   // 🔥 ミス判定
   if(s.miss && Math.random() < s.miss){
-    msg += `<br><span style="color:#4da6ff;font-size:22px;font-weight:bold;">
- MISS !!
-</span>`;
+    msg += "<br>Miss ！！";
     render();
 
     showEffect(msg, ()=>{
@@ -664,9 +604,7 @@ if(s.debuffDef){
 
   if(crit){
     base *= 2;
-    msg += `<br><span style="color:gold;font-size:26px;font-weight:bold;text-shadow:0 0 10px yellow;">
-⚡ CRITICAL !!
-</span>`;
+    msg += "<br>Critical！";
   }
 
   let dmg = Math.floor(base);
@@ -677,9 +615,7 @@ if(s.debuffDef){
   d.hp -= dmg;
   if(d.hp < 0) d.hp = 0;
 
-  msg += `<br><span style="color:red;font-size:22px;font-weight:bold;">
- HIT !! ${dmg} ダメージ
-</span>`;
+  msg += "<br>Hit !！ " + dmg + " のダメージ";
   }
 
   // 🔥 状態異常
@@ -885,19 +821,9 @@ function rematch(){
   proceedTurn();
 }
 
-async function goTitle(){
-
-  // ⭐これ追加
-  if(scanner){
-  await scanner.stop().catch(()=>{});
-  scanner.clear();
-  scanner = null;
-}
-
-document.getElementById("reader").classList.remove("active"); // ←これ追加
- document.getElementById("game").style.display="none";
+function goTitle(){
+  document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
-
   characters=[];
   document.getElementById("chars").innerHTML="";
   document.getElementById("skills").innerHTML="";
