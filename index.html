@@ -43,12 +43,12 @@ button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
 
-/* 通常は何も出さない */
-#reader::after {
-  display: none;
+/* ライブラリの変な枠を消す */
+#reader video + div {
+  display: none !important;
 }
 
-/* スキャン中だけ生成 */
+/* 自作スキャン枠 */
 #reader.active::after {
   content: "";
   position: absolute;
@@ -58,15 +58,8 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   height: 80px;
   transform: translate(-50%, -50%);
   border: 3px solid red;
+  box-shadow: 0 0 20px red;
   border-radius: 10px;
-
-  /* 光る感じ強化 */
-  box-shadow:
-    0 0 10px red,
-    0 0 20px red,
-    0 0 30px crimson;
-
-  pointer-events: none;
 }
 
 </style>
