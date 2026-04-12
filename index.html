@@ -184,6 +184,11 @@ function randomGen(){addChar();}
 function addChar(code=""){
   if(characters.length>=2)return;
 
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;}
+
   // ⭐ 分岐追加
   let c;
   if(code){
@@ -292,24 +297,37 @@ function scan(){
   let s = new Html5Qrcode("reader");
 
   s.start(
-    { facingMode: "environment" },
     {
-      fps: 15,
-      qrbox: { width: 300, height: 150 },
+      facingMode: "environment"
+    },
+    {
+      fps: 30, // 最大付近
+      qrbox: { width: 280, height: 90 }, // 横長でバーコード特化
+      aspectRatio: 1.777,
+
+      videoConstraints: {
+        width: 640,
+        height: 360 // 軽量化（超重要）
+      },
+
+      // ⭐最小構成（爆速化）
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128
-      ]
+        Html5QrcodeSupportedFormats.EAN_8
+      ],
+
+      // ⭐追加で高速化（対応環境のみ）
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
     },
     txt => {
+      navigator.vibrate?.(50); // 成功フィードバック（爆速体感）
       addChar(txt);
       s.stop();
     },
-    err => {
-      // 読み取り中エラー（無視OK）
-    }
-  );
+    err => {}
+  ).catch(err => console.log(err));
 }
 
  function createHash(code){
@@ -460,6 +478,10 @@ function animateHP(){
 }
 
 function resetChars(){
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;}
   characters = [];
   hpVisual = [];
   current = 0;
@@ -536,7 +558,9 @@ function useSkill(i){
 
   // 🔥 ミス判定
   if(s.miss && Math.random() < s.miss){
-    msg += "<br>Miss ！！";
+    msg += `<br><span style="color:#4da6ff;font-size:22px;font-weight:bold;">
+ MISS !!
+</span>`;
     render();
 
     showEffect(msg, ()=>{
@@ -604,7 +628,9 @@ if(s.debuffDef){
 
   if(crit){
     base *= 2;
-    msg += "<br>Critical！";
+    msg += `<br><span style="color:gold;font-size:26px;font-weight:bold;text-shadow:0 0 10px yellow;">
+⚡ CRITICAL !!
+</span>`;
   }
 
   let dmg = Math.floor(base);
@@ -615,7 +641,9 @@ if(s.debuffDef){
   d.hp -= dmg;
   if(d.hp < 0) d.hp = 0;
 
-  msg += "<br>Hit !！ " + dmg + " のダメージ";
+  msg += `<br><span style="color:red;font-size:22px;font-weight:bold;">
+ HIT !! ${dmg} ダメージ
+</span>`;
   }
 
   // 🔥 状態異常
@@ -821,9 +849,18 @@ function rematch(){
   proceedTurn();
 }
 
-function goTitle(){
+async function goTitle(){
+
+  // ⭐これ追加
+  if(scanner){
+    await scanner.stop().catch(()=>{});
+    scanner.clear();
+    scanner = null;
+  }
+
   document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
+
   characters=[];
   document.getElementById("chars").innerHTML="";
   document.getElementById("skills").innerHTML="";
