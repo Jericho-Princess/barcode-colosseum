@@ -177,11 +177,36 @@ async function addChar(code=""){
 
 function manualInput(){ let v=document.getElementById("barcodeInput").value; if(v) addChar(v); }
 function randomGen(){ addChar(""); }
-function scan(){
-  if(scanner) return;
+function scan() {
+  if (scanner) return;
   scanner = new Html5Qrcode("reader");
-  scanner.start({facingMode:"environment"}, {fps:15, qrbox:250}, txt=>{ addChar(txt); }, err=>{})
-  .catch(e=>{ alert("カメラを許可してください"); scanner=null; });
+  
+  const config = {
+    fps: 25, // 読み取り頻度を上げる（高速化）
+    qrbox: { width: 280, height: 180 }, // 読み取り範囲を横長のバーコードに合わせる
+    aspectRatio: 1.777778, // 16:9を指定して視野を広くする
+    // 読み取る形式を限定してエンジンを加速（EAN, UPC, Code128など）
+    formatsToSupport: [ 
+        Html5QrcodeSupportedFormats.EAN_13, 
+        Html5QrcodeSupportedFormats.EAN_8, 
+        Html5QrcodeSupportedFormats.CODE_128 
+    ]
+  };
+
+  // ビデオ設定で解像度を強制
+  scanner.start(
+    { facingMode: "environment", width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 } },
+    config,
+    txt => { 
+        // 成功時のバイブレーション（スマホなら「ブルッ」と鳴る）
+        if (navigator.vibrate) navigator.vibrate(50);
+        addChar(txt); 
+    },
+    err => {} // エラーはスルー
+  ).catch(e => {
+    alert("カメラ設定に失敗しました： " + e);
+    scanner = null;
+  });
 }
 
 function render(){
