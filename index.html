@@ -42,6 +42,22 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
+
+/* テーブルの見た目調整 */
+table tr { border-bottom: 1px solid rgba(255,255,255,0.1); }
+table td, table th { padding: 8px 4px; }
+
+/* オプション画面のスクロール対応（スマホ用） */
+#options {
+  width: 90%;
+  max-width: 400px;
+  margin: 10px auto;
+  box-sizing: border-box;
+}
+
+/* 入力欄を少し小さく */
+input { width: 120px; padding: 5px; font-size: 16px; }
+
 </style>
 </head>
 <body>
@@ -55,26 +71,45 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   <button onclick="showOptions()">オプション</button>
 </div>
 
-<div id="options" class="panel" style="display:none;">
-  プレイヤー1: <input id="player1Name" placeholder="1P"><br><br>
-  プレイヤー2: <input id="player2Name" placeholder="2P"><br><br>
-  <h3>技一覧</h3>
-  <ul style="text-align:left">
-    <li>攻撃: 通常の攻撃、必ず命中する</li>
-  <li>強打: 威力の高い攻撃、25%で失敗する</li>
-  <li>魔法: 威力が少し高い攻撃、15%で失敗する</li>
-  <li>毒針: 威力が小さい攻撃、5%で相手は即死する</li>
-  <li>憤怒: 自身の攻撃力を強化する</li>
-  <li>鉄壁: 自身の防御力を強化する</li>
-  <li>再生: 自身の体力が回復し、防御力も少しだけ強化する</li>
-  <li>疫病: 相手の攻撃力・防御力を低下させる</li>
-  <li>電撃: 威力が少し高い攻撃、相手を30%で麻痺状態にする</li>
-  <li>毒液: 威力が小さい攻撃、相手を70%で猛毒状態にする</li>
-  <li>呪詛: 相手を100%衰弱状態にさせる</li>
-  <li>汚染: 威力が小さい攻撃、相手を30%で被曝状態にする</li>
-  <li>奥義: 究極召喚獣専用の必殺、絶大な威力を持つ</li>
+<div id="options" class="panel" style="display:none; max-height: 80vh; overflow-y: auto;">
+  <div style="margin-bottom:20px;">
+    プレイヤー1: <input id="player1Name" placeholder="1P" style="width:100px;"><br>
+    プレイヤー2: <input id="player2Name" placeholder="2P" style="width:100px;">
+  </div>
+
+  <h3 style="margin:10px 0; border-bottom:1px solid #ccc;">技・状態異常 一覧</h3>
+  
+  <div style="overflow-x:auto;">
+    <table style="width:100%; font-size:14px; border-collapse:collapse; text-align:left;">
+      <tr style="border-bottom:1px solid #666;">
+        <th style="padding:5px;">技名</th>
+        <th style="padding:5px;">内容・効果</th>
+      </tr>
+      <tr><td>攻撃</td><td>通常ダメージ</td></tr>
+      <tr><td>強打</td><td>高威力 (25%でミス)</td></tr>
+      <tr><td>魔法</td><td>中威力 (15%でミス)</td></tr>
+      <tr><td>毒針</td><td>小威力 (5%で相手を即死)</td></tr>
+      <tr><td>憤怒</td><td>自身の攻撃力を強化</td></tr>
+      <tr><td>鉄壁</td><td>自身の防御力を強化</td></tr>
+      <tr><td>再生</td><td>自身の体力を回復＋防御強化</td></tr>
+      <tr><td>疫病</td><td>相手の攻撃・防御を低下</td></tr>
+      <tr><td>電撃</td><td>30%で相手を【麻痺】</td></tr>
+      <tr><td>毒液</td><td>70%で相手を【猛毒】</td></tr>
+      <tr><td>呪詛</td><td>100%で相手を【衰弱】</td></tr>
+      <tr><td>汚染</td><td>30%で相手を【被曝】</td></tr>
+      <tr><td>奥義</td><td>超絶威力 (SSR専用・1回限定)</td></tr>
+    </table>
+  </div>
+
+  <h3 style="margin:15px 0 5px 0; border-bottom:1px solid #ccc; font-size:16px;">状態異常の効果</h3>
+  <ul style="text-align:left; font-size:14px; padding-left:20px; margin-top:5px;">
+    <li><b>⚡麻痺:</b> 1ターン行動不能になり、回復すると解除。</li>
+    <li><b>☠猛毒:</b> 毎ターン、最大HPの4%ダメージ。</li>
+    <li><b>🩻衰弱:</b> 毎ターン4%ダメージ＋攻撃・防御が低下。</li>
+    <li><b>☢被曝:</b> 毎ターン3%ダメージ＋防御が大幅低下。</li>
   </ul>
-  <button onclick="closeOptions()">閉じる</button>
+
+  <button onclick="closeOptions()" style="margin-top:15px;">閉じる</button>
 </div>
 
 <div id="game" style="display:none;">
@@ -370,52 +405,86 @@ function showSkills(){
 
 function useSkill(i){
   if(!battleStarted) return;
+
+  // CPU中の操作防止
   if(waitingForCPU && gameMode=="pvp") return;
+
   let a = characters[current];
   let d = characters[1-current];
   let s = a.skills[i];
+
   waitingForCPU = true;
+
   let name = current==0 ? player1NameVal : player2NameVal;
   let enemy = current==0 ? player2NameVal : player1NameVal;
+
   let msg = name + " が " + s.name + " を使った";
 
+  // 🔥 奥義1回制限
   if(s.name==="奥義" && s.used){
     showEffect("奥義は１回しか使えない ！！");
     waitingForCPU = false;
     return;
   }
-  if(s.name==="奥義") s.used = true;
 
+  if(s.name==="奥義"){
+    s.used = true;
+  }
+
+  // 🔥 ミス判定 (文字を強調)
   if(s.miss && Math.random() < s.miss){
-    msg += "<br>Miss ！！";
+    msg += "<br><br><span style='color:#ff4d4d; font-size:1.5em; font-weight:bold;'>Miss ！！</span>";
     render();
-    showEffect(msg, ()=>{ waitingForCPU = false; nextTurn(); });
+
+    showEffect(msg, ()=>{
+      waitingForCPU = false;
+      nextTurn();
+    });
     return;
   }
-  if(s.instant && Math.random() < s.instant){ d.hp = 0; msg += "<br>即死 ！！"; }
+
+  if(s.instant && Math.random() < s.instant){
+    d.hp = 0;
+    msg += "<br><span style='color:purple;'>即死 ！！</span>";
+  }
+
   if(s.heal){
     let rate = 0.07 + Math.random() * 0.08;
     let heal = Math.floor(a.maxHp * rate);
     a.hp = Math.min(a.maxHp, a.hp + heal);
-    a.tempDef = (a.tempDef || a.def) * 1.1;
+    if(a.tempDef == null) a.tempDef = a.def;
+    a.tempDef *= 1.1;
     msg += `<br>${heal} の回復`;
   }
 
-  if(s.buffAtk) a.tempAtk = (a.tempAtk || a.atk) * s.buffAtk;
-  if(s.buffDef) a.tempDef = (a.tempDef || a.def) * s.buffDef;
-  if(s.debuffAtk) d.tempAtk = (d.tempAtk || d.atk) * s.debuffAtk;
-  if(s.debuffDef) d.tempDef = (d.tempDef || d.def) * s.debuffDef;
-  if(s.name==="呪詛") d.status = "weaken";
+  // バフ・デバフ処理
+  if(s.buffAtk){ a.tempAtk = (a.tempAtk || a.atk) * s.buffAtk; msg += "<br>攻撃力アップ！！"; }
+  if(s.buffDef){ a.tempDef = (a.tempDef || a.def) * s.buffDef; msg += "<br>防御力アップ！！"; }
+  if(s.debuffAtk){ d.tempAtk = (d.tempAtk || d.atk) * s.debuffAtk; msg += "<br>相手の攻撃力ダウン！！"; }
+  if(s.debuffDef){ d.tempDef = (d.tempDef || d.def) * s.debuffDef; msg += "<br>相手の防御力ダウン！！"; }
 
+  if(s.name==="呪詛"){
+    d.status = "weaken";
+  }
+
+  // 🔥 ダメージ処理 (Hit / Critical を強調)
   if(s.power){
     let crit = Math.random() < 0.05;
     let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
-    if(crit){ base *= 2; msg += "<br>Critical！"; }
     let dmg = Math.max(1, Math.floor(base));
+
+    if(crit){
+      dmg *= 2;
+      msg += "<br><br><span style='color:gold; font-size:1.5em; font-weight:bold;'>Critical ！！</span>";
+    } else {
+      msg += "<br><br><span style='font-size:1.2em; font-weight:bold;'>Hit ！！</span>";
+    }
+
     d.hp = Math.max(0, d.hp - dmg);
-    msg += "<br>Hit !！ " + dmg + " のダメージ";
+    msg += "<br>" + dmg + " のダメージ";
   }
 
+  // 🔥 状態異常
   if(s.status && !d.status && Math.random() < (s.rate || 1)){
     d.status = s.status;
     let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
@@ -423,8 +492,11 @@ function useSkill(i){
   }
 
   render();
+
   showEffect(msg, ()=>{
-    if(d.hp <= 0) pendingWin = name;
+    if(d.hp <= 0){
+      pendingWin = name;
+    }
     waitingForCPU = false;
     nextTurn();
   });
