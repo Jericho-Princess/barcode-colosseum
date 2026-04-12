@@ -299,44 +299,47 @@ async function scan(){
 
   scanner = new Html5Qrcode("reader");
 
-  let devices = await Html5Qrcode.getCameras();
-
-  // 背面カメラ優先
-  let backCam = devices.find(d =>
-    d.label.toLowerCase().includes("back") ||
-    d.label.toLowerCase().includes("rear")
-  );
-
-  let cameraId = backCam ? backCam.id : devices[0].id;
-
-  scanner.start(
-    cameraId,
-    {
-      fps: 30,
-      qrbox: { width: 280, height: 90 },
-      aspectRatio: 1.777,
-      videoConstraints: {
-        width: 640,
-        height: 360
-      },
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8
-      ],
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      }
-    },
-    txt => {
-      navigator.vibrate?.(50);
-      addChar(txt);
-
-      scanner.stop().then(()=>{
-        scanner.clear();
-        scanner = null;
-      });
+  const config = {
+    fps: 30,
+    qrbox: { width: 280, height: 90 },
+    aspectRatio: 1.777,
+    disableFlip: true,
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8
+    ],
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true
     }
-  ).catch(err => console.log(err));
+  };
+
+  try{
+    // ⭐ 背面カメラ強制
+    await scanner.start(
+      { facingMode: { exact: "environment" } },
+      config,
+      onScanSuccess
+    );
+  }catch(e){
+
+    // ⭐ fallback（ダメなら適当なカメラ）
+    let devices = await Html5Qrcode.getCameras();
+    await scanner.start(
+      devices[0].id,
+      config,
+      onScanSuccess
+    );
+  }
+}
+
+function onScanSuccess(txt){
+  navigator.vibrate?.(50);
+  addChar(txt);
+
+  scanner.stop().then(()=>{
+    scanner.clear();
+    scanner = null;
+  });
 }
 
  function createHash(code){
