@@ -43,19 +43,23 @@ button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 .status{font-size:16px;margin-top:5px;}
 
-/* ライブラリの変な枠を消す */
-#reader *:not(video) {
+#reader {
+  position: relative;
+}
+
+/* ライブラリの枠だけ消す */
+#reader video + div {
   display: none !important;
 }
 
-/* 自作スキャン枠 */
+/* 自作スキャン枠（qrboxと一致） */
 #reader.active::after {
   content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 260px;
-  height: 80px;
+  width: 280px;
+  height: 90px;
   transform: translate(-50%, -50%);
   border: 3px solid red;
   box-shadow: 0 0 20px red;
