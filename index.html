@@ -57,6 +57,13 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   transform: translate(-50%, -50%);
   border: 2px solid red;
   box-shadow: 0 0 10px red;
+
+  display: none; /* ←これ追加 */
+}
+
+/* スキャン中だけ表示 */
+#reader.active::after {
+  display: block;
 }
 
 </style>
@@ -308,6 +315,8 @@ function assignSkillsFixed(hash, rarity){
 
 async function scan(){
 
+document.getElementById("reader").classList.add("active"); // ←追加
+
   // 既に起動してたら止める
   if(scanner){
     await scanner.stop().catch(()=>{});
@@ -356,6 +365,8 @@ function onScanSuccess(txt){
   scanner.stop().then(()=>{
     scanner.clear();
     scanner = null;
+
+    document.getElementById("reader").classList.remove("active"); // ←追加
   });
 }
 
@@ -878,12 +889,13 @@ async function goTitle(){
 
   // ⭐これ追加
   if(scanner){
-    await scanner.stop().catch(()=>{});
-    scanner.clear();
-    scanner = null;
-  }
+  await scanner.stop().catch(()=>{});
+  scanner.clear();
+  scanner = null;
+}
 
-  document.getElementById("game").style.display="none";
+document.getElementById("reader").classList.remove("active"); // ←これ追加
+ document.getElementById("game").style.display="none";
   document.getElementById("title").style.display="block";
 
   characters=[];
