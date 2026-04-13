@@ -168,16 +168,17 @@ input#barcodeInput {
   .result-text {
     display: block !important;
     width: 100% !important;
-    /* 18pxなどの固定値に影響されない「画面横幅の18%」サイズ */
-    font-size: 12vw !important; 
-    line-height: 1.1 !important;
-    margin: 15px 0 !important;
+    /* 11vwに下げ、文字間隔をわずかに詰める */
+    font-size: 11vw !important; 
+    letter-spacing: -2px !important;
+    line-height: 1.0 !important;
+    margin: 10px 0 !important;
     font-weight: 900 !important;
     text-align: center !important;
-    /* はみ出し防止と強制表示 */
     box-sizing: border-box !important;
     visibility: visible !important;
     animation: pop 0.05s ease-out !important;
+    white-space: nowrap !important; /* 絶対に折り返さない */
 }
 
   @keyframes pop {
