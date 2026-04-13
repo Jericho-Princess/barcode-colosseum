@@ -169,7 +169,7 @@ input#barcodeInput {
     display: block !important;
     width: 100% !important;
     /* 11vwに下げ、文字間隔をわずかに詰める */
-    font-size: 11vw !important; 
+    font-size: 10vw !important; 
     letter-spacing: -2px !important;
     line-height: 1.0 !important;
     margin: 10px 0 !important;
@@ -828,10 +828,11 @@ function useSkill(i){
     
     if(crit){
       dmg *= 2;
+      // class="result-text" を適用し、余計な style 指定を削る
       msg += `<br><span class="result-text" style='color:#ffff00; text-shadow:0 0 12px orange;'>CRITICAL ！！</span>`;
     } else {
-      msg += `<br><span class='result-text' style='display:block !important; color:#ff0000; font-size:2.0em; font-weight:bold; text-shadow:2px 2px 4px black; margin:0 !important; line-height:0.8;'>HIT ！！</span>`;
-    } 
+      msg += `<br><span class="result-text" style='color:#ff0000; text-shadow:4px 4px 0#000;'>HIT ！！</span>`;
+    }
     d.hp = Math.max(0, d.hp - dmg);
     msg += `<span ${bigStyle}>${dmg} のダメージ ！！</span>`;
   }
