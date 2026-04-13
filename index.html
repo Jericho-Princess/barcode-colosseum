@@ -515,9 +515,9 @@ function createCharacterFromBarcode(code){
       status: null
     };
   } else if (code === "109555") { 
-    // --- 黒き翼のモスマン ---
+    // --- 黒翼のモスマン ---
     c = {
-      name: "黒き翼のモスマン",
+      name: "黒翼のモスマン",
       code: code, rarity: "ssr", atk: 60, def: 34, maxHp: 476, hp: 476,
       tempAtk: 60, tempDef: 34, sprite: "img/m2.png",
       skills: [
@@ -968,7 +968,7 @@ function closeOptions(){ document.getElementById("options").style.display="none"
 
 function showSecretMessage() {
     // 禍々しい赤色でメッセージを表示
-    const secretStyle = "style='color:#39ff14; font-size:1.8em; font-weight:bold; text-shadow:0 0 15px black, 0 0 5px red;'";
+    const secretStyle = "style='color:#39ff14; font-size:1.6em; font-weight:bold; text-shadow:0 0 15px black, 0 0 5px red;'";
     showEffect(`<span ${secretStyle}>☢ 放射能汚染領域：109555 ☢</span>`, null, true);
 }
 
