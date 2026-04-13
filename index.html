@@ -155,7 +155,6 @@ input#barcodeInput {
     display: inline-block;
     white-space: nowrap; /* 絶対に改行させない指定 */
   }
-あ
 
   /* 召喚時などの大きな文字スタイルをスマホ向けに上書き */
   .big-text-mobile {
@@ -193,90 +192,107 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 
 <div id="options" class="panel" style="display:none; max-height: 80vh; overflow-y: auto;">
   <div style="background:#222; padding:10px; border-radius:10px; margin-bottom:15px;">
-    プレイヤー1: <input id="player1Name" placeholder="1P" style="width:120px;"><br>
-    プレイヤー2: <input id="player2Name" placeholder="2P" style="width:120px;">
+    １Ｐの名前: <input id="player1Name" value="プレイヤー１" placeholder="1P" style="width:120px;"><br>
+２Ｐの名前: <input id="player2Name" value="プレイヤー２" placeholder="2P" style="width:120px;">
   </div>
 
-  <h3 style="color:gold; border-bottom:1px solid #555;">⚔️ 技一覧</h3>
-<ul style="text-align:left; font-size:14px; line-height:1.7; padding-left:1.2em; margin:0; list-style-position: outside;">
-  <li><b>攻撃:</b>ダメージを与える通常の攻撃</li>
-  <li><b>強打:</b>大ダメージを与える攻撃、外れやすい</li>
-  <li><b>斬撃:</b>威力が少し高い物理攻撃</li>
-  <li><b>火炎:</b>威力が高い属性魔法攻撃</li>
-  <li><b>氷結:</b>威力が少し高い物理攻撃</li>
-  <li><b>竜巻:</b>威力が高い属性魔法攻撃</li>
-  <li><b>電撃:</b>高威力魔法＋30%の確率で<b>[麻痺]</b></li>
-  <li><b>毒液:</b>低威力魔法＋70%の確率で<b>[猛毒]</b></li>
-  <li><b>汚染:</b>放射能攻撃＋30%の確率で<b>[被曝]</b></li>
-  <li><b>毒針:</b>低威力攻撃。5%で相手を<b>[即死]</b>させる</li>
-  <li><b>呪詛:</b>相手を<b>[衰弱]</b>状態にする</li>
-  <li><b>憤怒:</b>自身の攻撃力を強化する</li>
-  <li><b>鉄壁:</b>自身の防御力を強化する</li>
-  <li><b>再生:</b>HPを少し回復＋防御力を少し強化する</li>
-  <li><b>疫病:</b>相手の攻撃と防御を同時に弱体化させる</li>
-  <li><b>奥義:</b>究極召喚専用。１度だけ絶大なダメージ</li>
+  <h3 style="color:gold; border-bottom:1px solid #555; text-align: left;">⚔️ 技一覧</h3>
+<ul style="text-align:left; list-style-position: inside; padding: 0; margin: 0 0 20px 10px; display: block;">
+  <li><b>攻撃:</b>ダメージを与える通常の攻撃。</li>
+  <li><b>強打:</b>大ダメージを与える攻撃、外れやすい。</li>
+  <li><b>斬撃:</b>威力が少し高い物理攻撃。</li>
+  <li><b>火炎:</b>威力が高い属性魔法攻撃。</li>
+  <li><b>氷結:</b>威力が少し高い物理攻撃。</li>
+  <li><b>竜巻:</b>威力が高い属性魔法攻撃。</li>
+  <li><b>音波:</b>30の固定ダメージを与える。</li>
+  <li><b>電撃:</b>高威力魔法＋30%の確率で<b>[麻痺]</b>。</li>
+  <li><b>毒液:</b>低威力魔法＋70%の確率で<b>[猛毒]</b>。</li>
+  <li><b>光線:</b>放射能攻撃＋30%の確率で<b>[被曝]</b>。</li>
+  <li><b>死印:</b>低威力攻撃。5%で相手を<b>[即死]</b>させる。</li>
+  <li><b>呪詛:</b>相手を<b>[衰弱]</b>状態にする。</li>
+  <li><b>狂乱:</b>攻撃後、65％で自身を<b>[発狂]</b>状態にする。</li>
+  <li><b>憤怒:</b>自身の攻撃力を強化する。</li>
+  <li><b>鉄壁:</b>自身の防御力を強化する。</li>
+  <li><b>再生:</b>HPを少し回復＋防御力を少し強化する。</li>
+  <li><b>疫病:</b>相手の攻撃と防御を同時に弱体化させる。</li>
+  <li><b>奥義:</b>究極召喚専用。１度だけ絶大なダメージ。</li>
 </ul>
 
-  <h3 style="color:cyan; border-bottom:1px solid #555;">⚠️ 状態異常一覧</h3>
-  <ul style="text-align:left; font-size:14px; line-height:1.6;">
-    <li><span style="color:#ffff00;">⚡麻痺:</span> 1ターン行動不能になる。</li>
-    <li><span style="color:#bf00ff;">☠️猛毒:</span> 毎ターン、小さなダメージを受ける。</li>
-    <li><span style="color:#808080;">🩻衰弱:</span> 毎ターン、小さなダメージを受け、攻撃力・防御力が5%ずつ低下し続ける。</li>
-    <li><span style="color:#00ff00;">☢️被曝:</span> 毎ターン、小さなダメージを受け、防御力が大幅に低下し続ける。</li>
+  <h3 style="color:cyan; border-bottom:1px solid #555; text-align: left;">⚠️ 状態異常一覧</h3>
+<ul style="text-align:left; list-style-position: inside; padding: 0; margin: 0 0 20px 10px; display: block;">
+  <li><span style="color:#ffff00;">⚡麻痺:</span> 1ターン行動不能になる。</li>
+  <li><span style="color:#bf00ff;">☠️猛毒:</span> 小さなダメージを受け続ける。</li>
+  <li><span style="color:#808080;">🩻衰弱:</span> 小さなダメージを受け続け、攻撃力・防御力が低下し続ける。</li>
+  <li><span style="color:#00ff00;">☢️被曝:</span> 小さなダメージを受け続け、防御力が大幅に低下し続ける。</li>
+  <li><span style="color:#ff0000;">👁‍🗨発狂:</span> 攻撃力が上がり、防御力が低下し続ける。</li>
   </ul>
 
-  <div style="margin-top: 25px; padding-bottom: 10px;">
-  <button onclick="closeOptions()" style="
-    width: 80%;
-    max-width: 300px;
-    background: #4a90e2; /* 鮮やかな青で目立たせる */
-    color: white;
-    font-weight: bold;
-    border: 2px solid #fff;
-    padding: 12px;
-    border-radius: 50px; /* 丸みをつけて「戻る感」を出す */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    cursor: pointer;
-  ">
-    タイトルに戻る
-  </button>
-</div>
-</div>
-
-<div id="game" style="display:none;">
-  <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
-    <button onclick="goTitle()" style="font-size: 16px; padding: 10px;">← タイトル</button>
-    <button onclick="resetChars()" style="background: #a00; font-size: 16px; padding: 10px;">リセット</button>
+  <div style="margin-top: 150px;">
+    <button onclick="closeOptions()" style="
+      width: 80%;
+      max-width: 300px;
+      background: #4a90e2;
+      color: white;
+      font-weight: bold;
+      border: 2px solid #fff;
+      padding: 12px;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      cursor: pointer;
+    ">
+      タイトルに戻る
+    </button>
   </div>
 
-  <div class="panel" id="summonPanel">
-    <div style="margin-bottom: 10px; display: flex; justify-content: center;">
-      <button onclick="scan()" style="width: 240px; height: 50px; font-size: 22px; background: #4a90e2; color: white; border: 2px solid #fff; border-radius: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-        スキャン召喚
-      </button>
+  <div style="margin-top: 200px; padding-bottom: 30px;">
+    <img src="img/secret01.png" alt="" 
+         style="
+           width: 50px; 
+           cursor: default; 
+           opacity: 0.35; 
+           filter: grayscale(100%) brightness(0.5); 
+           transition: opacity 1.5s;
+         " 
+         onclick="showSecretMessage()"
+         onmouseenter="this.style.opacity='0.1'"
+         onmouseleave="this.style.opacity='0.03'">
+  </div>
+
+</div> <div id="game" style="display:none;"> <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+      <button onclick="goTitle()" style="font-size: 16px; padding: 10px;">← タイトル</button>
+      <button onclick="resetChars()" style="background: #a00; font-size: 16px; padding: 10px;">リセット</button>
     </div>
 
-    <div class="summon-box">
-      <input id="barcodeInput" placeholder="バーコード数字を入力" style="width: 180px;">
-      <button onclick="manualInput()" style="background: #27ae60; color: white; border: 2px solid #fff; padding: 10px 15px; font-size: 16px; font-weight: bold;">召喚</button>
-      <button onclick="randomGen()" style="background: #f39c12; color: white; border: 2px solid #fff; padding: 10px 15px; font-size: 16px; font-weight: bold;">ランダム召喚</button>
-    </div>
-  </div> <button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
-  <div id="reader"></div>
+    <div class="panel" id="summonPanel">
+      <div style="margin-bottom: 10px; display: flex; justify-content: center;">
+        <button onclick="scan()" style="width: 240px; height: 50px; font-size: 22px; background: #4a90e2; color: white; border: 2px solid #fff; border-radius: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center; margin: 0 auto;">
+          スキャン召喚
+        </button>
+      </div>
 
-  <div id="gameContent">
-    <div id="turn" class="panel"></div>
-    <div id="chars"></div>
-    
-    <div id="actionArea">
-        <div id="skills" class="panel"></div>
-    </div>
-    
-    <button id="startBattleBtn" style="display:none;" onclick="startBattle()">バトル開始</button>
-</div>
+      <div class="summon-box">
+        <input id="barcodeInput" placeholder="バーコード数字を入力" style="width: 180px;">
+        <button onclick="manualInput()" style="background: #27ae60; color: white; border: 2px solid #fff; padding: 10px 15px; font-size: 16px; font-weight: bold;">召喚</button>
+        <button onclick="randomGen()" style="background: #f39c12; color: white; border: 2px solid #fff; padding: 10px 15px; font-size: 16px; font-weight: bold;">ランダム召喚</button>
+      </div>
+    </div> 
+
+    <button onclick="rematch()" style="display:none;" id="rematchBtn">再戦</button>
+    <div id="reader"></div>
+
+    <div id="gameContent">
+      <div id="turn" class="panel"></div>
+      <div id="chars"></div>
+      
+      <div id="actionArea">
+          <div id="skills" class="panel"></div>
+      </div>
+      
+      <button id="startBattleBtn" style="display:none;" onclick="startBattle()">バトル開始</button>
+    </div> </div> 
 <script>
 let characters=[], current=0, gameMode="pvp";
-let player1NameVal="1P", player2NameVal="2P";
+let player1NameVal="プレイヤー１", player2NameVal="プレイヤー２";
 let battleStarted=false, waitingForCPU=false;
 let pendingWin = null;
 let hpVisual = [];
@@ -284,9 +300,9 @@ let animRunning = false;
 let scanner = null;
 
 const IMAGES={
-  common:Array.from({length:17},(_,i)=>`img/c${i+1}.png`),
-  rare:Array.from({length:10},(_,i)=>`img/r${i+1}.png`),
-  ssr:Array.from({length:6},(_,i)=>`img/s${i+1}.png`)
+  common:Array.from({length:25},(_,i)=>`img/c${i+1}.png`),
+  rare:Array.from({length:11},(_,i)=>`img/r${i+1}.png`),
+  ssr:Array.from({length:8},(_,i)=>`img/s${i+1}.png`)
 };
 
 function chaosHash(h){
@@ -378,7 +394,7 @@ function assignSkillsRandom(rarity){
   let pool = [
     {name:"強打", power:1.65, miss:0.30},
     {name:"斬撃", power:1.4, miss:0.15},
-    {name:"毒針", power:0.5, instant:0.05},
+    {name:"死印", power:0.5, instant:0.05},
     {name:"憤怒", buffAtk:1.2},
     {name:"鉄壁", buffDef:1.2},
     {name:"再生", heal:0.1, buffDef:1.1},
@@ -389,7 +405,9 @@ function assignSkillsRandom(rarity){
     {name:"竜巻", power:1.5, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
     {name:"呪詛", status:"weaken"},
-    {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
+    {name:"光線", power:0.3, status:"irradiate", rate:0.3, miss:0.15}, 
+    {name:"音波", fixedDmg: 30, miss: 0.15 }, 
+    {name:"狂乱", power: 1.3, selfStatus: "insane", selfRate: 0.65, miss: 0.15 }, // 自分に状態異常
   ];
   let i1 = Math.floor(Math.random()*pool.length);
   let i2 = Math.floor(Math.random()*pool.length);
@@ -404,7 +422,7 @@ function assignSkillsFixed(hash, rarity){
   let pool = [
     {name:"強打", power:1.65, miss:0.30},
     {name:"斬撃", power:1.4, miss:0.15},
-    {name:"毒針", power:0.5, instant:0.05},
+    {name:"死印", power:0.5, instant:0.05},
     {name:"憤怒", buffAtk:1.2},
     {name:"鉄壁", buffDef:1.2},
     {name:"再生", heal:0.1, buffDef:1.1},
@@ -415,7 +433,9 @@ function assignSkillsFixed(hash, rarity){
     {name:"竜巻", power:1.5, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
     {name:"呪詛", status:"weaken"},
-    {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
+    {name:"光線", power:0.3, status:"irradiate", rate:0.3, miss:0.15},
+    {name:"音波", fixedDmg: 30, miss: 0.15 }, // 固定ダメージ用
+    {name:"狂乱", power: 1.3, selfStatus: "insane", selfRate: 0.65, miss: 0.15 }, // 自分に状態異常
   ];
   let h1 = mixHash(hash);
   let h2 = mixHash(hash + 999);
@@ -474,7 +494,9 @@ function createHash(code){
 function createCharacterFromBarcode(code){
   let hash = createHash(code);
   let c;
+
   if (code === "666") { 
+    // --- 蝿の王 ---
     c = {
       name: "蝿の王",
       code: code, rarity: "ssr", atk: 66, def: 32, maxHp: 480, hp: 480,
@@ -482,21 +504,38 @@ function createCharacterFromBarcode(code){
       skills: [
         {name: "攻撃", power: 1.0, miss: 0.05},
         {name: "電撃", power: 1.2, status:"paralyze", rate: 0.4, miss: 0.15}, 
-        {name:"集中", heal:0.02, buffAtk:1.03, buffDef:1.03}, 
+        {name: "集中", heal:0.02, buffAtk:1.03, buffDef:1.03}, 
         {name: "奥義", power: 2.1, status:"poison", used: false}
       ],
       status: null
     };
+  } else if (code === "109555") { 
+    // --- 黒き翼のモスマン ---
+    c = {
+      name: "黒き翼のモスマン",
+      code: code, rarity: "ssr", atk: 60, def: 34, maxHp: 476, hp: 476,
+      tempAtk: 60, tempDef: 34, sprite: "img/m2.png",
+      skills: [
+        {name: "攻撃", power: 1.0, miss: 0.05},
+        {name: "発狂", selfStatus: "insane" }, 
+        {name: "疫病", debuffAtk:0.95, debuffDef:0.95}, 
+        {name: "奥義", power: 2.0, status:"irradiate", used: false}
+      ],
+      status: null
+    };
   } else {
+    // --- 通常モンスター生成 ---
     let r = (hash % 100) / 100;
     let rarity = r < 0.04 ? "ssr" : r < 0.24 ? "rare" : "common";
     let atk = 40 + (hash % 15);
     let def = 20 + (hash % 10);
     let hp  = 300 + (hash % 70);
-    if(rarity==="rare"){ atk *= 1.2; def *= 1.2; hp *= 1.2; }
-    if(rarity==="ssr"){ atk *= 1.4; def *= 1.4; hp *= 1.4; }
+    
+    if(rarity === "rare"){ atk *= 1.2; def *= 1.2; hp *= 1.2; }
+    if(rarity === "ssr"){ atk *= 1.4; def *= 1.4; hp *= 1.4; }
+    
     c = {
-      name: "バーコードモンスター" + code.slice(-3),
+      name: "モンスター" + code.slice(-3),
       code: code, rarity: rarity,
       atk: Math.floor(atk), def: Math.floor(def), maxHp: Math.floor(hp), hp: Math.floor(hp),
       tempAtk: Math.floor(atk), tempDef: Math.floor(def),
@@ -526,9 +565,12 @@ function render() {
             // 麻痺：黄色
             statusDisplay = "<span style='color:yellow; font-size:20px; font-weight:bold; text-shadow:0 0 5px yellow;'>状態：⚡ 麻痺</span>";
         } else if(c.status === "irradiate") {
-            // 被曝：緑（毒々しいネオングリーン）
-            statusDisplay = "<span style='color:#39ff14; font-size:20px; font-weight:bold; text-shadow:0 0 8px #39ff14;'>状態：☢️ 被曝</span>";
-        }
+    // 被曝：緑（既存）
+    statusDisplay = "<span style='color:#39ff14; font-size:20px; font-weight:bold; text-shadow:0 0 8px #39ff14;'>状態：☢️ 被曝</span>";
+} else if (c.status === "insane") {
+    // 【修正】発狂：赤（他のスタイルと統一）
+    statusDisplay = "<span style='color:#ff0000; font-size:20px; font-weight:bold; text-shadow:0 0 8px #ff0000;'>状態：👁‍🗨 発狂</span>";
+}
 
         let rarityClass = c.rarity || "common";
 
@@ -666,23 +708,25 @@ function useSkill(i){
   let name = current==0 ? player1NameVal : player2NameVal;
   let enemy = current==0 ? player2NameVal : player1NameVal;
   
-  // スタイルの統一（白・太字・大きなサイズ）
   const bigStyle = "class='mobile-text' style='color:white; font-size:1.4em; font-weight:bold; text-shadow:2px 2px 4px black; line-height:1.6;'";
   
   let msg = `<span ${bigStyle}>${name} が ${s.name} を使った</span>`;
 
   if(s.name==="奥義" && s.used){
-    showEffect("奥義は１回しか使えない ！！", () => {
-      // ポップアップを閉じた後に「操作可能」に戻す
-      waitingForCPU = false; 
-      showSkills(); // ボタンを再度活性化
-    });
-    return;
-  }
+  // 他のメッセージと合わせたスタイル定義を追加
+  const warnStyle = "class='mobile-text' style='color:#ffffff; font-size:1.5em; font-weight:bold; text-shadow:2px 2px 4px black;'";
+  
+  // スタイルを適用
+  showEffect(`<span ${warnStyle}>奥義は１回しか使えない ！！</span>`, () => {
+    waitingForCPU = false; 
+    showSkills();
+  });
+  return;
+}
   if(s.name==="奥義") s.used = true;
 
   if(s.miss && Math.random() < s.miss){
-    msg += "<br><span style='color:#4d94ff; font-size:1.3em; font-weight:bold; text-shadow:1px 1px 2px black;'>Miss ！！</span>";
+    msg += "<br><span style='color:#4d94ff; font-size:1.5em; font-weight:bold; text-shadow:1px 1px 2px black;'>Miss ！！</span>";
     showEffect(msg, ()=>{ waitingForCPU = false; nextTurn(); });
     return;
   }
@@ -693,54 +737,64 @@ function useSkill(i){
 
   let statusChanges = [];
 
+  if (s.fixedDmg) {
+        let dmg = s.fixedDmg;
+        d.hp = Math.max(0, d.hp - dmg);
+        msg += `<br><span ${bigStyle} style='color:#ff4d4d;'>固定 ${dmg} ダメージ ！！</span>`;
+    }
+
+   if (s.selfStatus && Math.random() < (s.selfRate || 1)) {
+        a.status = s.selfStatus;
+        let stName = { insane: "発狂" };
+        msg += `<br><span ${bigStyle} style='color:red;'>${name} は ${stName[a.status]} した ！！</span>`;
+    }
+
   if(s.heal){
     let heal = Math.floor(a.maxHp * (0.07 + Math.random() * 0.05));
     a.hp = Math.min(a.maxHp, a.hp + heal);
-    a.tempDef = (a.tempDef || a.def) * 1.1;
-    statusChanges.push(`<span ${bigStyle}>HPが ${heal} 回復 ！！</span>`); // スタイル適用
+    a.tempDef = Math.floor((a.tempDef || a.def) * 1.1);
+    statusChanges.push(`<span ${bigStyle}>HPが ${heal} 回復 ！！</span>`);
   }
 
   if(s.buffAtk) {
     a.tempAtk = Math.floor((a.tempAtk || a.atk) * s.buffAtk);
-    statusChanges.push(`<span ${bigStyle}>攻撃力が上がった ！！</span>`); // スタイル適用
+    statusChanges.push(`<span ${bigStyle}>攻撃力が上がった ！！</span>`);
   }
   if(s.buffDef) {
     a.tempDef = Math.floor((a.tempDef || a.def) * s.buffDef);
-    statusChanges.push(`<span ${bigStyle}>防御力が上がった ！！</span>`); // スタイル適用
+    statusChanges.push(`<span ${bigStyle}>防御力が上がった ！！</span>`);
   }
   if(s.debuffAtk) {
     d.tempAtk = Math.floor((d.tempAtk || d.atk) * s.debuffAtk);
-    statusChanges.push(`<span ${bigStyle}>相手の攻撃力を下げた ！！</span>`); // スタイル適用
+    statusChanges.push(`<span ${bigStyle}>相手の攻撃力を下げた ！！</span>`);
   }
   if(s.debuffDef) {
     d.tempDef = Math.floor((d.tempDef || d.def) * s.debuffDef);
-    statusChanges.push(`<span ${bigStyle}>相手の防御力を下げた ！！</span>`); // スタイル適用
+    statusChanges.push(`<span ${bigStyle}>相手の防御力を下げた ！！</span>`);
   }
 
   if(statusChanges.length > 0) {
     msg += "<br>" + statusChanges.join("<br>");
   }
 
-  // ダメージ計算部分
   if(s.power){
     let crit = Math.random() < 0.05;
     let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
     let dmg = Math.max(1, Math.floor(base));
     if(crit){
       dmg *= 2;
-      msg += `<br><span style='color:#ffff00; font-size:1.6em; font-weight:bold; text-shadow:0 0 8px orange;'>Critical ！！</span>`;
+      msg += `<br><span style='color:#ffff00; font-size:1.8em; font-weight:bold; text-shadow:0 0 8px orange;'>Critical ！！</span>`;
     } else {
-      msg += `<br><span style='color:#ff4d4d; font-size:1.4em; font-weight:bold; text-shadow:2px 2px 4px black;'>Hit ！！</span>`; // 統一スタイル
-    }
+      msg += `<br><span class='mobile-text' style='color:#ff0000; font-size:1.5em; font-weight:bold; text-shadow:2px 2px 4px black;'>Hit ！！</span>`;
+    } 
     d.hp = Math.max(0, d.hp - dmg);
-    msg += `<br><span ${bigStyle}>${dmg} のダメージ ！！</span>`; // 統一スタイル
+    msg += `<br><span ${bigStyle}>${dmg} のダメージ ！！</span>`;
   }
 
-  // 状態異常付与
   if(s.status && !d.status && Math.random() < (s.rate || 1)){
     d.status = s.status;
     let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
-    msg += `<br><span ${bigStyle}>${enemy} は ${st[d.status]} 状態になった ！！</span>`; // 統一スタイル
+    msg += `<br><span ${bigStyle}>${enemy} は ${st[d.status]} 状態になった ！！</span>`;
   }
 
   render();
@@ -762,56 +816,68 @@ function proceedTurn(){
   }
 }
 
-function nextTurn(){
-  if(pendingWin){ showWin(pendingWin); pendingWin = null; return; }
+function nextTurn() {
+  if (pendingWin) { showWin(pendingWin); pendingWin = null; return; }
   current = 1 - current;
   waitingForCPU = false;
   let c = characters[current];
-  let name = current==0 ? player1NameVal : player2NameVal;
+  let name = current == 0 ? player1NameVal : player2NameVal;
+  const bigStyle = "class='mobile-text' style='color:white; font-size:1.4em; font-weight:bold; text-shadow:2px 2px 4px black; line-height:1.6;'";
 
-  if(c.status==="poison" || c.status==="weaken" || c.status==="irradiate"){
-    let damageRate = 0.04; 
-    if(c.status === "weaken") damageRate = 0.02; 
-    if(c.status === "irradiate") damageRate = 0.03;
+  // 1. 麻痺判定（動けない場合はここで終了）
+  if (c.status === "paralyze" || c.status === "paralyzed") {
+    showEffect(`<span ${bigStyle}>${name} は麻痺で体が動かない ！！</span>`, () => {
+      c.status = null;
+      nextTurn();
+    });
+    return;
+  }
+
+  // 2. 発狂判定（独立したif文にする）
+  if (c.status === "insane") {
+    c.tempAtk = Math.floor((c.tempAtk || c.atk) * 1.1);
+    c.tempDef = Math.floor((c.tempDef || c.def) * 0.7);
+    render();
+    showEffect(`<span ${bigStyle}>${name} は発狂している ！！</span><br><span ${bigStyle}>攻撃力が上がった ！！<br>防御が下がった ！！</span>`, () => {
+      proceedTurn();
+    });
+    return;
+  }
+
+  // 3. 持続ダメージ系（毒・衰弱・被曝）
+  if (c.status === "poison" || c.status === "weaken" || c.status === "irradiate") {
+    let damageRate = 0.04;
+    if (c.status === "weaken") damageRate = 0.02;
+    if (c.status === "irradiate") damageRate = 0.03;
 
     let dmg = Math.floor(c.maxHp * damageRate);
     c.hp = Math.max(0, c.hp - dmg);
-    
-    let statusMsg = "";
-    let subMsg = ""; 
-    // ポップアップ内のすべての文字サイズをここで統一（白・太字）
-    const bigStyle = "class='mobile-text' style='color:white; font-size:1.4em; font-weight:bold; text-shadow:2px 2px 4px black; line-height:1.6;'";
 
-    if(c.status === "poison") {
+    let statusMsg = "";
+    let subMsg = "";
+
+    if (c.status === "poison") {
       statusMsg = `<span ${bigStyle}>${name} は猛毒に侵されている ！！</span>`;
-    }
-    if(c.status === "weaken") {
+    } else if (c.status === "weaken") {
       statusMsg = `<span ${bigStyle}>${name} は衰弱していく ！！</span>`;
-      c.tempAtk = (c.tempAtk || c.atk) * 0.95; 
-      c.tempDef = (c.tempDef || c.def) * 0.95;
+      c.tempAtk = Math.floor((c.tempAtk || c.atk) * 0.95);
+      c.tempDef = Math.floor((c.tempDef || c.def) * 0.95);
       subMsg = `<br><span ${bigStyle}>攻撃力が下がった ！！</span><br><span ${bigStyle}>防御力が下がった ！！</span>`;
-    }
-    if(c.status === "irradiate") {
+    } else if (c.status === "irradiate") {
       statusMsg = `<span ${bigStyle}>${name} は被曝している ！！</span>`;
-      c.tempDef = (c.tempDef || c.def) * 0.78;
+      c.tempDef = Math.floor((c.tempDef || c.def) * 0.78);
       subMsg = `<br><span ${bigStyle}>防御力が下がった ！！</span>`;
     }
 
     render();
-    // すべてのメッセージを bigStyle で統一して表示
-    showEffect(statusMsg + `<br><span ${bigStyle}>` + dmg + " ダメージ ！！</span>" + subMsg, ()=>{
-      if(c.hp <= 0) showWin(current==0 ? player2NameVal : player1NameVal);
+    showEffect(statusMsg + `<br><span ${bigStyle}>` + dmg + " ダメージ ！！</span>" + subMsg, () => {
+      if (c.hp <= 0) showWin(current == 0 ? player2NameVal : player1NameVal);
       else proceedTurn();
     });
     return;
   }
-  
-  if(c.status==="paralyze" || c.status==="paralyzed"){
-    // 麻痺のメッセージも統一サイズに
-    const bigStyle = "style='color:white; font-size:1.4em; font-weight:bold; text-shadow:2px 2px 4px black;'";
-    showEffect(`<span ${bigStyle}>${name} は麻痺で体が動かない ！！</span>`, ()=>{ c.status = null; nextTurn(); });
-    return;
-  }
+
+  // 4. 何もなければ通常ターン開始
   proceedTurn();
 }
 
@@ -884,8 +950,8 @@ function startCPU(){
   player1NameVal=document.getElementById("player1Name").value||"1P";
   player2NameVal="CPU";
   gameMode="cpu";
-  document.getElementById("title").style.display="none";
-  document.getElementById("game").style.display="block";
+  document.getElementById("title").style.display="none"; // タイトルを隠す
+  document.getElementById("game").style.display="block"; // ゲーム画面を表示する
 }
 function showOptions(){ 
     document.getElementById("title").style.display="none"; 
@@ -894,6 +960,12 @@ function showOptions(){
     opt.scrollTop = 0; // 開いた時に一番上に戻す
 }
 function closeOptions(){ document.getElementById("options").style.display="none"; document.getElementById("title").style.display="block"; }
+
+function showSecretMessage() {
+    // 禍々しい赤色でメッセージを表示
+    const secretStyle = "style='color:#39ff14; font-size:1.8em; font-weight:bold; text-shadow:0 0 15px black, 0 0 5px red;'";
+    showEffect(`<span ${secretStyle}>☢ 放射能汚染領域：109555 ☢</span>`, null, true);
+}
 
 </script>
 </body>
