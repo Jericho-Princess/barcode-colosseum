@@ -686,8 +686,17 @@ function showEffect(msg, cb, isFixed = false) {
     target.appendChild(e);
 }
 
-function startBattle(){
+async function startBattle(){
   if(characters.length < 2) return;
+  
+  // 1. もしスキャナーが動いていたら、確実に止めてからバトルへ
+  if(scanner){
+    try {
+      if(scanner.getState() === 2) await scanner.stop();
+      scanner.clear();
+      scanner = null;
+    } catch(e) { console.log(e); }
+  }
   
   // ここで召喚UI一式を非表示にする
   document.getElementById("summonPanel").style.display = "none";
