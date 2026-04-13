@@ -146,12 +146,20 @@ input#barcodeInput {
 
 /* ⭐スマホ用 */
 @media (max-width: 600px) {
-  /* ポップアップの横幅を広げ、余白を削る */
   #effect.fixed-center {
-    width: 96% !important; 
-    padding: 15px 5px !important;
-    font-size: 16px !important; 
+    width: 96% !important;
+    /* 左右の余白を極限まで削って文字スペースを確保 */
+    padding: 20px 2px !important; 
   }
+
+  /* secretメッセージ等の長い一行を、画面幅に合わせて自動縮小する魔法の記述 */
+  .secret-text {
+    display: inline-block;
+    white-space: nowrap; /* 絶対に改行させない */
+    font-size: 5.5vw !important; /* 画面の横幅(viewport width)に合わせて文字サイズを流動的に変える */
+    letter-spacing: -1px; /* 文字の間隔をわずかに詰め、1行に収まりやすくする */
+  }
+}
 
   /* JavaScriptで指定している文字サイズをスマホ向けに強制ダウンサイズ */
   .mobile-text {
@@ -967,8 +975,8 @@ function showOptions(){
 function closeOptions(){ document.getElementById("options").style.display="none"; document.getElementById("title").style.display="block"; }
 
 function showSecretMessage() {
-    // 禍々しい赤色でメッセージを表示
-    const secretStyle = "style='color:#39ff14; font-size:1.6em; font-weight:bold; text-shadow:0 0 15px black, 0 0 5px red;'";
+    // クラスに 'secret-text' を追加
+    const secretStyle = "class='secret-text' style='color:#39ff14; font-weight:bold; text-shadow:0 0 15px black, 0 0 5px red;'";
     showEffect(`<span ${secretStyle}>☢ 放射能汚染領域：109555 ☢</span>`, null, true);
 }
 
