@@ -20,6 +20,7 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
 }
 
 /* キャラクター表示エリア（上部固定） */
@@ -32,36 +33,49 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 
 /* 技ボタンとポップアップが重なるエリア */
 #actionArea {
-    position: relative; 
-    width: 100%;
+    position: relative;
+    width: 95%; /* スマホの画面端に少し余裕を持たせる */
     max-width: 500px;
-    min-height: 200px; /* ポップアップが出ても高さが確保されるように */
-    margin: 0 auto;
+    min-height: 200px;
+    margin: 10px auto; /* 左右をautoにして中央寄せ */
 }
 
 #skills {
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* ボタンを中央に集める */
 }
 
-/* ポップアップ：技エリア内だけに表示 */
 #effect {
-    position: absolute; /* 親要素の actionArea を基準にする */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    max-width: 450px;
+    background: rgba(0,0,0,0.95);
+    border-radius: 15px;
+    border: 2px solid #4a90e2;
+    padding: 20px;
     box-sizing: border-box;
     z-index: 1000;
-    background: rgba(0,0,0,0.9); 
-    border-radius: 15px;
-    font-size: 20px;
-    border: 2px solid #4a90e2;
+    text-align: center;
 }
+
+#effect.fixed-center {
+    position: fixed; /* 画面全体が基準 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    height: auto; /* 中身に合わせて広がる */
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
 input#barcodeInput {
   background: #eee;
   color: #333;
@@ -102,29 +116,41 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   <button onclick="showOptions()">オプション</button>
 </div>
 
-<div id="options" class="panel" style="display:none;">
-  プレイヤー1: <input id="player1Name" placeholder="1P"><br><br>
-  プレイヤー2: <input id="player2Name" placeholder="2P"><br><br>
-  <h3>技一覧</h3>
-  <ul style="text-align:left">
-    <li>攻撃: 通常の攻撃、5%で失敗する</li>
-    <li>強打: 威力の高い攻撃、30%で失敗する</li>
-    <li>斬撃: 威力が少し高い攻撃、15%で失敗する</li>
-    <li>毒針: 威力が小さい攻撃、5%で相手は即死する</li>
-    <li>憤怒: 自身の攻撃力を強化する</li>
-    <li>鉄壁: 自身の防御力を強化する</li>
-    <li>再生: 自身の体力が回復し、防御力も少しだけ強化する</li>
-    <li>疫病: 相手の攻撃力・防御力を低下させる</li>
-    <li>火炎: 威力が高い攻撃、20％で失敗する</li>
-    <li>氷結: 威力が少し高い攻撃、10％で失敗する</li>
-    <li>電撃: 威力が少し高い攻撃、相手を30%で麻痺状態にする</li>
-    <li>竜巻: 威力が少し高い攻撃、15％で失敗する</li>
-    <li>毒液: 威力が小さい攻撃、相手を70%で猛毒状態にする</li>
-    <li>呪詛: 相手を100%衰弱状態にさせる</li>
-    <li>汚染: 威力が小さい攻撃、相手を30%で被曝状態にする</li>
-    <li>奥義: 究極召喚獣専用の必殺、絶大な威力を持つ</li>
+<div id="options" class="panel" style="display:none; max-height: 80vh; overflow-y: auto;">
+  <div style="background:#222; padding:10px; border-radius:10px; margin-bottom:15px;">
+    プレイヤー1: <input id="player1Name" placeholder="1P" style="width:120px;"><br>
+    プレイヤー2: <input id="player2Name" placeholder="2P" style="width:120px;">
+  </div>
+
+  <h3 style="color:gold; border-bottom:1px solid #555;">⚔️ 技一覧</h3>
+  <ul style="text-align:left; font-size:14px; line-height:1.6;">
+    <li><b>攻撃:</b> ダメージを与える通常の攻撃</li>
+　　<li><b>強打</b> 大ダメージを与える攻撃、「攻撃」より外れやすい</li>
+　　<li><b>斬撃:</b> ダメージを与える攻撃。威力が少し高い。</li>
+    <li><b>火炎:</b> 威力が高い魔法攻撃。</li>
+　　<li><b>氷結:</b> 威力が高い魔法攻撃。</li>
+　　<li><b>竜巻:</b> 威力が高い魔法攻撃。</li>
+    <li><b>電撃:</b> 威力が高い魔法攻撃＋30%の確率で<b>[麻痺]。</b></li>
+    <li><b>毒液:</b> 威力が低い魔法攻撃＋70%の確率で<b>[猛毒]。</b></li>
+    <li><b>汚染:</b> 威力が低い放射能攻撃＋30%の確率で<b>[被曝]。</b></li>
+    <li><b>毒針:</b> 威力がかなり低い攻撃。5%の確率で相手を<b>[即死]</b>させる。</li>
+    <li><b>呪詛:</b> 相手を<b>[衰弱]</b>させる。</li>
+    <li><b>憤怒:</b> 自身の攻撃力を強化する。</li>
+　　<li><b>鉄壁:</b> 自身の防御力を強化する。</li>
+    <li><b>再生:</b> 自身のHPを回復 ＋ 自身の防御力を少し強化にする。</li>
+    <li><b>疫病:</b> 相手の攻撃と防御を弱体化させる。</li>
+    <li><b>奥義:</b> 究極召喚獣専用の必殺技。１度だけ大ダメージを与える。</li>
   </ul>
-  <button onclick="closeOptions()">閉じる</button>
+
+  <h3 style="color:cyan; border-bottom:1px solid #555;">⚠️ 状態異常一覧</h3>
+  <ul style="text-align:left; font-size:14px; line-height:1.6;">
+    <li><span style="color:#ffff00;">⚡麻痺:</span> 1ターン行動不能になる。</li>
+    <li><span style="color:#bf00ff;">☠️猛毒:</span> 毎ターン、小さなダメージを受ける。</li>
+    <li><span style="color:#808080;">🩻衰弱:</span> 毎ターン、小さなダメージを受け、攻撃力・防御力が5%ずつ低下し続ける。</li>
+    <li><span style="color:#00ff00;">☢️被曝:</span> 毎ターン、小さなダメージを受け、防御力が大幅に低下し続ける。</li>
+  </ul>
+
+  <button onclick="closeOptions()" style="background:#555; margin-top:10px;">閉じる</button>
 </div>
 
 <div id="game" style="display:none;">
@@ -228,8 +254,8 @@ function assignSkillsRandom(rarity){
     {name:"強打", power:1.65, miss:0.30},
     {name:"斬撃", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05},
-    {name:"憤怒", buffAtk:1.3},
-    {name:"鉄壁", buffDef:1.3},
+    {name:"憤怒", buffAtk:1.2},
+    {name:"鉄壁", buffDef:1.2},
     {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
     {name:"火炎", power:1.5, miss:0.2},
@@ -254,8 +280,8 @@ function assignSkillsFixed(hash, rarity){
     {name:"強打", power:1.65, miss:0.30},
     {name:"斬撃", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05},
-    {name:"憤怒", buffAtk:1.3},
-    {name:"鉄壁", buffDef:1.3},
+    {name:"憤怒", buffAtk:1.2},
+    {name:"鉄壁", buffDef:1.2},
     {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
     {name:"火炎", power:1.5, miss:0.2},
@@ -330,9 +356,9 @@ function createCharacterFromBarcode(code){
       tempAtk: 66, tempDef: 32, sprite: "img/m1.png",
       skills: [
         {name: "攻撃", power: 1.0, miss: 0.05},
-        {name: "電撃", power: 1.2, status:"paralyze", rate: 0.4, miss: 0.1}, 
+        {name: "電撃", power: 1.2, status:"paralyze", rate: 0.4, miss: 0.15}, 
         {name:"集中", heal:0.02, buffAtk:1.03, buffDef:1.03}, 
-        {name: "奥義", power: 2.5, status:"poison", used: false}
+        {name: "奥義", power: 2.1, status:"poison", used: false}
       ],
       status: null
     };
@@ -422,22 +448,27 @@ async function resetChars(){
   document.getElementById("startBattleBtn").style.display = "none";
 }
 
-function showEffect(msg, cb) {
+function showEffect(msg, cb, isFixed = false) {
     let old = document.getElementById("effect");
     if (old) old.remove();
 
     let e = document.createElement("div");
     e.id = "effect";
-    // スマホでのタップしやすさを考慮
-    e.innerHTML = `<div style="padding:15px;">${msg}</div><small style="color:#4a90e2;">[ タップで進む ]</small>`;
+    // isFixed が true なら専用クラスを付与
+    if (isFixed) e.className = "fixed-center";
+    
+    e.innerHTML = `
+        <div style="margin-bottom:15px;">${msg}</div>
+        <small style="color:#4a90e2;">[ タップで進む ]</small>
+    `;
     
     e.onclick = () => {
         e.remove();
         if (cb) cb();
     };
 
-    // 重要：body ではなく actionArea に追加する
-    const target = document.getElementById("actionArea") || document.body;
+    // 固定表示ならbodyへ、そうでなければactionAreaへ
+    const target = isFixed ? document.body : (document.getElementById("actionArea") || document.body);
     target.appendChild(e);
 }
 
@@ -479,8 +510,11 @@ function useSkill(i){
   let msg = name + " が " + s.name + " を使った";
 
   if(s.name==="奥義" && s.used){
-    showEffect("奥義は１回しか使えない ！！");
-    waitingForCPU = false;
+    showEffect("奥義は１回しか使えない ！！", () => {
+      // ポップアップを閉じた後に「操作可能」に戻す
+      waitingForCPU = false; 
+      showSkills(); // ボタンを再度活性化
+    });
     return;
   }
   if(s.name==="奥義") s.used = true;
@@ -495,19 +529,43 @@ function useSkill(i){
     d.hp = 0; msg += "<br><span style='color:purple; font-weight:bold;'>即死 ！！</span>";
   }
 
+  let statusChanges = [];
+
   if(s.heal){
-    let heal = Math.floor(a.maxHp * (0.07 + Math.random() * 0.08));
+    // 0.07 (7%) + (0.0〜1.0) * 0.05 (5%) = 7% 〜 12%
+    let heal = Math.floor(a.maxHp * (0.07 + Math.random() * 0.05));
     a.hp = Math.min(a.maxHp, a.hp + heal);
+    
+    // 防御バフの処理（既存のまま）
     a.tempDef = (a.tempDef || a.def) * 1.1;
-    msg += `<br>${heal} の回復`;
+    statusChanges.push(`<span style="color:lime;">HPが ${heal} 回復 ！！</span>`);
   }
 
-  if(s.buffAtk) a.tempAtk = (a.tempAtk || a.atk) * s.buffAtk;
-  if(s.buffDef) a.tempDef = (a.tempDef || a.def) * s.buffDef;
-  if(s.debuffAtk) d.tempAtk = (d.tempAtk || d.atk) * s.debuffAtk;
-  if(s.debuffDef) d.tempDef = (d.tempDef || d.def) * s.debuffDef;
+  if(s.buffAtk) {
+    a.tempAtk = Math.floor((a.tempAtk || a.atk) * s.buffAtk);
+    statusChanges.push(`<span style="color:orange;">攻撃力が上昇 ！！`);
+  }
+  if(s.buffDef) {
+    a.tempDef = Math.floor((a.tempDef || a.def) * s.buffDef);
+    statusChanges.push(`<span style="color:cyan;">防御力が上昇 ！！`);
+  }
+  if(s.debuffAtk) {
+    d.tempAtk = Math.floor((d.tempAtk || d.atk) * s.debuffAtk);
+    statusChanges.push(`<span style="color:red;">相手の攻撃力を下げた ！！`);
+  }
+  if(s.debuffDef) {
+    d.tempDef = Math.floor((d.tempDef || d.def) * s.debuffDef);
+    statusChanges.push(`<span style="color:red;">相手の防御力を下げた ！！`);
+  }
+
+  // メッセージにバフ情報を合流
+  if(statusChanges.length > 0) {
+    msg += "<br>" + statusChanges.join("<br>");
+  }
+
   if(s.name==="呪詛") d.status = "weaken";
 
+  // ダメージ計算
   if(s.power){
     let crit = Math.random() < 0.05;
     let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
@@ -516,16 +574,17 @@ function useSkill(i){
       dmg *= 2;
       msg += "<br><span style='color:#ffff00; font-size:1.6em; font-weight:bold; text-shadow:0 0 8px orange;'>Critical ！！</span>";
     } else {
-      msg += "<br><span style='color:#ff4d4d; font-size:1.3em; font-weight:bold; text-shadow:1px 1px 2px black;'>Hit ！！</span>";
+      msg += "<br><span style='color:#ff4d4d; font-size:1.3em; font-weight:bold;'>Hit ！！</span>";
     }
     d.hp = Math.max(0, d.hp - dmg);
-    msg += "<br><span style='font-size:1.1em;'>" + dmg + " のダメージ ！！</span>";
+    msg += `<br><span style="font-size:1.2em;">${dmg} のダメージ ！！</span>`;
   }
 
+  // 状態異常付与
   if(s.status && !d.status && Math.random() < (s.rate || 1)){
     d.status = s.status;
     let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
-    msg += "<br>" + enemy + " は " + st[d.status] + " になった";
+    msg += `<br><span style="color:yellow;">${enemy} は ${st[d.status]} になった ！！</span>`;
   }
 
   render();
@@ -554,18 +613,26 @@ function nextTurn(){
   let c = characters[current];
   let name = current==0 ? player1NameVal : player2NameVal;
 
-  if(c.status==="poison" || c.status==="weaken" || c.status==="irradiate"){
-    let dmg = Math.floor(c.maxHp * (c.status==="irradiate" ? 0.03 : 0.04));
+ if(c.status==="poison" || c.status==="weaken" || c.status==="irradiate"){
+    // 猛毒と被曝は 4% または 3% のまま、衰弱(weaken)だけダメージ率を分ける
+    let damageRate = 0.04; // 基本（猛毒など）
+    if(c.status === "weaken") damageRate = 0.02; // ⭐衰弱のみ 4% → 2% にナーフ
+    if(c.status === "irradiate") damageRate = 0.03;
+
+    let dmg = Math.floor(c.maxHp * damageRate);
     c.hp = Math.max(0, c.hp - dmg);
+    
     let statusMsg = "";
     if(c.status === "poison") statusMsg = name + " は猛毒に侵されている ！！";
     if(c.status === "weaken") {
       statusMsg = name + " は衰弱していく ！！";
-      c.tempAtk = (c.tempAtk || c.atk) * 0.95; c.tempDef = (c.tempDef || c.def) * 0.95;
+      // 攻防低下のデバフ効果は維持
+      c.tempAtk = (c.tempAtk || a.atk) * 0.95; 
+      c.tempDef = (c.tempDef || a.def) * 0.95;
     }
     if(c.status === "irradiate") {
       statusMsg = name + " は被曝している ！！";
-      c.tempDef = (c.tempDef || c.def) * 0.8;
+      c.tempDef = (c.tempDef || c.def) * 0.78;
     }
     render();
     // ⭐ font-size:1.3em; を追加して攻撃時と同じサイズに合わせる
@@ -582,11 +649,27 @@ function nextTurn(){
   proceedTurn();
 }
 
-function showWin(w){
-  battleStarted = false;
-  document.getElementById("skills").innerHTML = "";
-  document.getElementById("rematchBtn").style.display = "inline-block";
-  showEffect(`${w} の勝利！！`);
+function showWin(w) {
+    battleStarted = false;
+    document.getElementById("skills").innerHTML = "";
+
+    // 文字サイズを PC/スマホ両対応に（clampを使用）
+    let msg = `
+        <div style="
+            font-size: clamp(32px, 8vw, 60px); 
+            font-weight: bold; 
+            color: gold; 
+            text-shadow: 0 0 10px orange, 2px 2px 5px black;
+            padding: 10px;
+        ">
+            ${w}<br>勝利！！
+        </div>
+    `;
+
+    // 第3引数を true にして、画面中央固定・見切れ防止モードで表示
+    showEffect(msg, () => {
+        document.getElementById("rematchBtn").style.display = "inline-block";
+    }, true);
 }
 
 function rematch(){
@@ -630,7 +713,12 @@ function startCPU(){
   document.getElementById("title").style.display="none";
   document.getElementById("game").style.display="block";
 }
-function showOptions(){ document.getElementById("title").style.display="none"; document.getElementById("options").style.display="block"; }
+function showOptions(){ 
+    document.getElementById("title").style.display="none"; 
+    let opt = document.getElementById("options");
+    opt.style.display="block"; 
+    opt.scrollTop = 0; // 開いた時に一番上に戻す
+}
 function closeOptions(){ document.getElementById("options").style.display="none"; document.getElementById("title").style.display="block"; }
 
 </script>
