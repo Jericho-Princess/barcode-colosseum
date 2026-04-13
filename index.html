@@ -60,15 +60,18 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   プレイヤー2: <input id="player2Name" placeholder="2P"><br><br>
   <h3>技一覧</h3>
   <ul style="text-align:left">
-    <li>攻撃: 通常の攻撃、必ず命中する</li>
-  <li>強打: 威力の高い攻撃、25%で失敗する</li>
-  <li>魔法: 威力が少し高い攻撃、15%で失敗する</li>
+    <li>攻撃: 通常の攻撃、5%で失敗する</li>
+  <li>強打: 威力の高い攻撃、30%で失敗する</li>
+  <li>斬撃: 威力が少し高い攻撃、15%で失敗する</li>
   <li>毒針: 威力が小さい攻撃、5%で相手は即死する</li>
   <li>憤怒: 自身の攻撃力を強化する</li>
   <li>鉄壁: 自身の防御力を強化する</li>
   <li>再生: 自身の体力が回復し、防御力も少しだけ強化する</li>
   <li>疫病: 相手の攻撃力・防御力を低下させる</li>
+  <li>火炎: 威力が高い攻撃、20％で失敗する</li>
+　<li>氷結: 威力が少し高い攻撃、10％で失敗する</li>
   <li>電撃: 威力が少し高い攻撃、相手を30%で麻痺状態にする</li>
+　<li>竜巻: 威力が少し高い攻撃、15％で失敗する</li>
   <li>毒液: 威力が小さい攻撃、相手を70%で猛毒状態にする</li>
   <li>呪詛: 相手を100%衰弱状態にさせる</li>
   <li>汚染: 威力が小さい攻撃、相手を30%で被曝状態にする</li>
@@ -111,9 +114,9 @@ let animRunning = false;
 let scanner = null; // ⭐ これが必要
 
 const IMAGES={
-  common:Array.from({length:12},(_,i)=>`img/c${i+1}.png`),
-  rare:Array.from({length:5},(_,i)=>`img/r${i+1}.png`),
-  ssr:Array.from({length:3},(_,i)=>`img/s${i+1}.png`)
+  common:Array.from({length:17},(_,i)=>`img/c${i+1}.png`),
+  rare:Array.from({length:10},(_,i)=>`img/r${i+1}.png`),
+  ssr:Array.from({length:6},(_,i)=>`img/s${i+1}.png`)
 };
 
 function chaosHash(h){
@@ -126,16 +129,19 @@ function chaosHash(h){
 }
 
 function assignSkills(r){
-  let skills = [{name:"攻撃", power:1.0}];
+  let skills = [{name:"攻撃", power:1.0, miss:0.05}];
   let pool = [
-    {name:"強打", power:1.8, miss:0.30},
-    {name:"魔法", power:1.4, miss:0.15},
+    {name:"強打", power:1.65, miss:0.30},
+    {name:"斬撃", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05},
     {name:"憤怒", buffAtk:1.3},
     {name:"鉄壁", buffDef:1.3},
     {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"火炎", power:1.5, miss:0.2},
+    {name:"氷結", power:1.3, miss:0.1},
     {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"竜巻", power:1.5, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
     {name:"呪詛", status:"weaken"},
     {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
@@ -186,14 +192,17 @@ async function addChar(code=""){
 function assignSkillsRandom(rarity){
   let skills = [{name:"攻撃", power:1.0}];
   let pool = [
-    {name:"強打", power:1.8, miss:0.30},
-    {name:"魔法", power:1.4, miss:0.15},
+    {name:"強打", power:1.65, miss:0.30},
+    {name:"斬撃", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05},
     {name:"憤怒", buffAtk:1.3},
     {name:"鉄壁", buffDef:1.3},
     {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"火炎", power:1.5, miss:0.2},
+    {name:"氷結", power:1.3, miss:0.1},
     {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"竜巻", power:1.5, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
     {name:"呪詛", status:"weaken"},
     {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
@@ -209,14 +218,17 @@ function assignSkillsRandom(rarity){
 function assignSkillsFixed(hash, rarity){
   let skills = [{name:"攻撃", power:1.0}];
   let pool = [
-    {name:"強打", power:1.8, miss:0.30},
-    {name:"魔法", power:1.4, miss:0.15},
+    {name:"強打", power:1.65, miss:0.30},
+    {name:"斬撃", power:1.4, miss:0.15},
     {name:"毒針", power:0.5, instant:0.05},
     {name:"憤怒", buffAtk:1.3},
     {name:"鉄壁", buffDef:1.3},
     {name:"再生", heal:0.1, buffDef:1.1},
     {name:"疫病", debuffAtk:0.93, debuffDef:0.93},
+    {name:"火炎", power:1.5, miss:0.2},
+    {name:"氷結", power:1.3, miss:0.1},
     {name:"電撃", power:1.2, status:"paralyze", rate:0.3, miss:0.15},
+    {name:"竜巻", power:1.5, miss:0.15},
     {name:"毒液", power:0.3, status:"poison", rate:0.7, miss:0.15},
     {name:"呪詛", status:"weaken"},
     {name:"汚染", power:0.3, status:"irradiate", rate:0.3, miss:0.15}
@@ -272,24 +284,56 @@ function createHash(code){
 
 function createCharacterFromBarcode(code){
   let hash = createHash(code);
-  let r = (hash % 100) / 100;
-  let rarity = "common";
-  if(r < 0.04) rarity = "ssr";
-  else if(r < 0.24) rarity = "rare";
-  let atk = 40 + (hash % 15);
-  let def = 20 + (hash % 10);
-  let hp  = 300 + (hash % 70);
-  if(rarity==="rare"){ atk *= 1.2; def *= 1.2; hp *= 1.2; }
-  if(rarity==="ssr"){ atk *= 1.4; def *= 1.4; hp *= 1.4; }
-  return {
-    name: "バーコードモンスター" + code.slice(-3),
-    code: code, rarity: rarity,
-    atk: Math.floor(atk), def: Math.floor(def), maxHp: Math.floor(hp), hp: Math.floor(hp),
-    tempAtk: Math.floor(atk), tempDef: Math.floor(def),
-    sprite: IMAGES[rarity][hash % IMAGES[rarity].length],
-    skills: assignSkillsFixed(hash, rarity),
-    status: null
-  };
+  let c;
+
+  // ⭐ 隠しコードの判定
+  if (code === "666") { 
+    c = {
+      name: "蝿の王",
+      code: code,
+      rarity: "ssr",
+      atk: 66, 
+      def: 32, 
+      maxHp: 480, 
+      hp: 480,
+      tempAtk: 66, 
+      tempDef: 32,
+      sprite: "img/m1.png", // 好きな画像を指定
+      // 専用の技セットを直接書く
+      skills: [
+        {name: "攻撃", power: 1.0, miss: 0.05},
+        {name: "電撃", power: 1.2, status:"paralyze", rate: 0.4, miss: 0.1}, 
+        {name:"集中", heal:0.02, buffAtk:1.03, buffDef:1.03}, 
+        {name: "奥義", power: 2.5, status:"poison", used: false} // 毒属性
+      ],
+      status: null
+    };
+  } 
+  // 隠しコード以外は通常の生成
+  else {
+    let r = (hash % 100) / 100;
+    let rarity = "common";
+    if(r < 0.04) rarity = "ssr";
+    else if(r < 0.24) rarity = "rare";
+    
+    let atk = 40 + (hash % 15);
+    let def = 20 + (hash % 10);
+    let hp  = 300 + (hash % 70);
+    if(rarity==="rare"){ atk *= 1.2; def *= 1.2; hp *= 1.2; }
+    if(rarity==="ssr"){ atk *= 1.4; def *= 1.4; hp *= 1.4; }
+    
+    c = {
+      name: "バーコードモンスター" + code.slice(-3),
+      code: code, rarity: rarity,
+      atk: Math.floor(atk), def: Math.floor(def), maxHp: Math.floor(hp), hp: Math.floor(hp),
+      tempAtk: Math.floor(atk), tempDef: Math.floor(def),
+      sprite: IMAGES[rarity][hash % IMAGES[rarity].length],
+      skills: assignSkillsFixed(hash, rarity),
+      status: null
+    };
+  }
+  
+  return c;
 }
 
 function render(){
