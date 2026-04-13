@@ -15,19 +15,52 @@ body{font-family:sans-serif;margin:0;padding:0;background:#3b2f2f;color:#f5f5f5;
 .ssr{border-color:gold;box-shadow:0 0 15px gold;}
 .hpWrap{background:#222;height:15px;position:relative;}
 .hpNow{background:lime;height:15px;transition:width 0.5s linear;}
-#gameContent{display:flex;flex-direction:column;align-items:center;}
 #charsAndSkills{display:flex;flex-direction:row;justify-content:center;align-items:flex-start;flex-wrap:wrap;}
-#skills{margin-left:20px;}
-#effect{
-  position:fixed;
-  top:30%;
-  left:50%;
-  transform:translate(-50%,0);
-  font-size:28px;
-  z-index:999;
-  background:rgba(0,0,0,0.8);
-  padding:20px;
-  border-radius:15px;
+#gameContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* キャラクター表示エリア（上部固定） */
+#chars {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+/* 技ボタンとポップアップが重なるエリア */
+#actionArea {
+    position: relative; 
+    width: 100%;
+    max-width: 500px;
+    min-height: 200px; /* ポップアップが出ても高さが確保されるように */
+    margin: 0 auto;
+}
+
+#skills {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ポップアップ：技エリア内だけに表示 */
+#effect {
+    position: absolute; /* 親要素の actionArea を基準にする */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    z-index: 1000;
+    background: rgba(0,0,0,0.9); 
+    border-radius: 15px;
+    font-size: 20px;
+    border: 2px solid #4a90e2;
 }
 input#barcodeInput {
   background: #eee;
@@ -97,7 +130,7 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 <div id="game" style="display:none;">
   <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
     <button onclick="goTitle()" style="font-size: 16px; padding: 10px;">← タイトル</button>
-    <button onclick="resetChars()" style="background: #a00; font-size: 16px; padding: 10px;">召喚破棄</button>
+    <button onclick="resetChars()" style="background: #a00; font-size: 16px; padding: 10px;">リセット</button>
   </div>
 
   <div class="panel" id="summonPanel">
@@ -117,12 +150,13 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 
   <div id="gameContent">
     <div id="turn" class="panel"></div>
-    <div id="charsAndSkills">
-      <div id="chars"></div>
-      <div id="skills" class="panel"></div>
+    <div id="chars"></div>
+    
+    <div id="actionArea">
+        <div id="skills" class="panel"></div>
     </div>
+    
     <button id="startBattleBtn" style="display:none;" onclick="startBattle()">バトル開始</button>
-  </div>
 </div>
 <script>
 let characters=[], current=0, gameMode="pvp";
@@ -388,14 +422,23 @@ async function resetChars(){
   document.getElementById("startBattleBtn").style.display = "none";
 }
 
-function showEffect(msg,cb){
-  let old=document.getElementById("effect");
-  if(old) old.remove();
-  let e=document.createElement("div");
-  e.id="effect";
-  e.innerHTML=msg+"<br><small>クリックで進む</small>";
-  e.onclick=()=>{e.remove();if(cb)cb();};
-  document.body.appendChild(e);
+function showEffect(msg, cb) {
+    let old = document.getElementById("effect");
+    if (old) old.remove();
+
+    let e = document.createElement("div");
+    e.id = "effect";
+    // スマホでのタップしやすさを考慮
+    e.innerHTML = `<div style="padding:15px;">${msg}</div><small style="color:#4a90e2;">[ タップで進む ]</small>`;
+    
+    e.onclick = () => {
+        e.remove();
+        if (cb) cb();
+    };
+
+    // 重要：body ではなく actionArea に追加する
+    const target = document.getElementById("actionArea") || document.body;
+    target.appendChild(e);
 }
 
 function startBattle(){
