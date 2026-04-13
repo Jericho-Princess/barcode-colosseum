@@ -140,11 +140,22 @@ input#barcodeInput {
 }
 
 /* ⭐スマホ用 */
-@media (max-width: 600px){
-  #effect{
-    font-size:18px;
-    padding:15px;
-    width:80%;
+@media (max-width: 600px) {
+  /* ポップアップを画面幅いっぱいに使い、文字を少し小さく */
+  #effect.fixed-center {
+    width: 95% !important; /* 横幅を広げて改行を防ぐ */
+    padding: 15px 10px !important;
+    font-size: 16px !important; /* 全体のベースを少し下げる */
+  }
+
+  /* 召喚時などの大きな文字スタイルをスマホ向けに上書き */
+  .big-text-mobile {
+    font-size: 1.2em !important; 
+    line-height: 1.4 !important;
+  }
+  
+  .name-text-mobile {
+    font-size: 1.4em !important;
   }
 }
 .skillBtn{margin:10px;padding:15px 25px;font-size:20px;border-radius:10px;}
