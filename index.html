@@ -862,7 +862,7 @@ function nextTurn() {
     c.tempAtk = Math.floor((c.tempAtk || c.atk) * 1.1);
     c.tempDef = Math.floor((c.tempDef || c.def) * 0.7);
     render();
-    showEffect(`<span ${bigStyle}>${name} は発狂している ！！</span><br><span ${bigStyle}>攻撃力が上がった ！！<br>防御が下がった ！！</span>`, () => {
+    showEffect(`<span ${bigStyle}>${name} は発狂している ！！</span><br><span ${bigStyle}>攻撃力が上がった ！！<br>防御力が下がった ！！</span>`, () => {
       proceedTurn();
     });
     return;
