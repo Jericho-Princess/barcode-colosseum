@@ -123,24 +123,24 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
   </div>
 
   <h3 style="color:gold; border-bottom:1px solid #555;">⚔️ 技一覧</h3>
-  <ul style="text-align:left; font-size:14px; line-height:1.6;">
-    <li><b>攻撃:</b> ダメージを与える通常の攻撃</li>
-　　<li><b>強打</b> 大ダメージを与える攻撃、「攻撃」より外れやすい</li>
-　　<li><b>斬撃:</b> ダメージを与える攻撃。威力が少し高い。</li>
-    <li><b>火炎:</b> 威力が高い魔法攻撃。</li>
-　　<li><b>氷結:</b> 威力が高い魔法攻撃。</li>
-　　<li><b>竜巻:</b> 威力が高い魔法攻撃。</li>
-    <li><b>電撃:</b> 威力が高い魔法攻撃＋30%の確率で<b>[麻痺]。</b></li>
-    <li><b>毒液:</b> 威力が低い魔法攻撃＋70%の確率で<b>[猛毒]。</b></li>
-    <li><b>汚染:</b> 威力が低い放射能攻撃＋30%の確率で<b>[被曝]。</b></li>
-    <li><b>毒針:</b> 威力がかなり低い攻撃。5%の確率で相手を<b>[即死]</b>させる。</li>
-    <li><b>呪詛:</b> 相手を<b>[衰弱]</b>させる。</li>
-    <li><b>憤怒:</b> 自身の攻撃力を強化する。</li>
-　　<li><b>鉄壁:</b> 自身の防御力を強化する。</li>
-    <li><b>再生:</b> 自身のHPを回復 ＋ 自身の防御力を少し強化にする。</li>
-    <li><b>疫病:</b> 相手の攻撃と防御を弱体化させる。</li>
-    <li><b>奥義:</b> 究極召喚獣専用の必殺技。１度だけ大ダメージを与える。</li>
-  </ul>
+<ul style="text-align:left; font-size:14px; line-height:1.7; padding-left:1.2em; margin:0; list-style-position: outside;">
+  <li><b>攻撃:</b>ダメージを与える通常の攻撃</li>
+  <li><b>強打:</b>大ダメージを与える攻撃、外れやすい</li>
+  <li><b>斬撃:</b>威力が少し高い物理攻撃</li>
+  <li><b>火炎:</b>威力が高い属性魔法攻撃</li>
+  <li><b>氷結:</b>威力が少し高い物理攻撃</li>
+  <li><b>竜巻:</b>威力が高い属性魔法攻撃</li>
+  <li><b>電撃:</b>高威力魔法＋30%の確率で<b>[麻痺]</b></li>
+  <li><b>毒液:</b>低威力魔法＋70%の確率で<b>[猛毒]</b></li>
+  <li><b>汚染:</b>放射能攻撃＋30%の確率で<b>[被曝]</b></li>
+  <li><b>毒針:</b>低威力攻撃。5%で相手を<b>[即死]</b>させる</li>
+  <li><b>呪詛:</b>相手を<b>[衰弱]</b>状態にする</li>
+  <li><b>憤怒:</b>自身の攻撃力を強化する</li>
+  <li><b>鉄壁:</b>自身の防御力を強化する</li>
+  <li><b>再生:</b>HPを少し回復＋防御力を少し強化する</li>
+  <li><b>疫病:</b>相手の攻撃と防御を同時に弱体化させる</li>
+  <li><b>奥義:</b>究極召喚専用。１度だけ絶大なダメージ</li>
+</ul>
 
   <h3 style="color:cyan; border-bottom:1px solid #555;">⚠️ 状態異常一覧</h3>
   <ul style="text-align:left; font-size:14px; line-height:1.6;">
@@ -150,7 +150,22 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
     <li><span style="color:#00ff00;">☢️被曝:</span> 毎ターン、小さなダメージを受け、防御力が大幅に低下し続ける。</li>
   </ul>
 
-  <button onclick="closeOptions()" style="background:#555; margin-top:10px;">閉じる</button>
+  <div style="margin-top: 25px; padding-bottom: 10px;">
+  <button onclick="closeOptions()" style="
+    width: 80%;
+    max-width: 300px;
+    background: #4a90e2; /* 鮮やかな青で目立たせる */
+    color: white;
+    font-weight: bold;
+    border: 2px solid #fff;
+    padding: 12px;
+    border-radius: 50px; /* 丸みをつけて「戻る感」を出す */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    cursor: pointer;
+  ">
+    タイトルに戻る
+  </button>
+</div>
 </div>
 
 <div id="game" style="display:none;">
@@ -223,7 +238,17 @@ function manualInput(){let v=document.getElementById("barcodeInput").value;if(!v
 function randomGen(){addChar();}
 
 async function addChar(code=""){
-  if(characters.length>=2)return;
+  // ⭐追加：2体以上いる場合の警告チェック
+  if(characters.length >= 2){
+    showEffect(
+      "<span style='color:#ff4d4d; font-weight:bold;'>⚠️ 戦いは１vs１だ ！！</span><br>別のモンスターを召喚するなら<br>「リセット」を押せ", 
+      null, 
+      true // 画面中央に固定表示
+    );
+    return; // ここで処理を中断
+  }
+  
+  // --- 以下、既存の召喚処理 ---
   
   // スキャナーが起動中(2)なら止める
   if(scanner && scanner.getState() === 2){
@@ -245,7 +270,7 @@ async function addChar(code=""){
     hpVisual.push(c.hp); 
     render();
     if(characters.length==2) document.getElementById("startBattleBtn").style.display="inline-block";
-  });
+  }, true);
 }
 
 function assignSkillsRandom(rarity){
@@ -328,7 +353,7 @@ function scan(){
       }
     }
   ).catch(err => {
-    alert("カメラの起動に失敗しました。設定を確認してください。");
+    alert("カメラが動かないようだ…。");
     scanner = null;
   });
 }
