@@ -205,8 +205,8 @@ input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
 
 <div id="options" class="panel" style="display:none; max-height: 80vh; overflow-y: auto;">
   <div style="background:#222; padding:10px; border-radius:10px; margin-bottom:15px;">
-    １Ｐの名前: <input id="player1Name" value="プレイヤー１" placeholder="1P" style="width:120px;"><br>
-２Ｐの名前: <input id="player2Name" value="プレイヤー２" placeholder="2P" style="width:120px;">
+    １Ｐの名前: <input id="player1Name" value="１Ｐ" placeholder="1P" style="width:120px;"><br>
+２Ｐの名前: <input id="player2Name" value="２Ｐ" placeholder="2P" style="width:120px;">
   </div>
 
   <h3 style="color:gold; border-bottom:1px solid #555; text-align: left;">⚔️ 技一覧</h3>
@@ -963,7 +963,7 @@ function startPVP(){
 }
 function startCPU(){
   player1NameVal=document.getElementById("player1Name").value||"1P";
-  player2NameVal="CPU";
+  player2NameVal="ＣＰＵ";
   gameMode="cpu";
   document.getElementById("title").style.display="none"; // タイトルを隠す
   document.getElementById("game").style.display="block"; // ゲーム画面を表示する
