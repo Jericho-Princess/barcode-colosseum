@@ -155,28 +155,45 @@ input#barcodeInput {
 @media (max-width: 600px) {
   #effect.fixed-center {
     width: 96% !important;
-    /* 左右の余白を極限まで削って文字スペースを確保 */
     padding: 20px 2px !important; 
   }
 
-  /* secretメッセージ等の長い一行を、画面幅に合わせて自動縮小する魔法の記述 */
   .secret-text {
     display: inline-block;
-    white-space: nowrap; /* 絶対に改行させない */
-    font-size: 5.5vw !important; /* 画面の横幅(viewport width)に合わせて文字サイズを流動的に変える */
-    letter-spacing: -1px; /* 文字の間隔をわずかに詰め、1行に収まりやすくする */
+    white-space: nowrap;
+    font-size: 5.5vw !important;
+    letter-spacing: -1px;
   }
+
+  .result-text {
+    display: block !important;
+    width: 100% !important;
+    /* 18pxなどの固定値に影響されない「画面横幅の18%」サイズ */
+    font-size: 18vw !important; 
+    line-height: 1.1 !important;
+    margin: 15px 0 !important;
+    font-weight: 900 !important;
+    text-align: center !important;
+    /* はみ出し防止と強制表示 */
+    box-sizing: border-box !important;
+    visibility: visible !important;
+    animation: pop 0.3s ease-out !important;
 }
 
-  /* JavaScriptで指定している文字サイズをスマホ向けに強制ダウンサイズ */
-  .mobile-text {
-    font-size: 1.25em !important; /* 1.4em〜1.5emから少し下げる */
-    line-height: 1.3 !important;
-    display: inline-block;
-    white-space: nowrap; /* 絶対に改行させない指定 */
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
   }
 
-  /* 召喚時などの大きな文字スタイルをスマホ向けに上書き */
+  /* 既存の mobile-text（通常のメッセージ用） */
+  .mobile-text {
+    font-size: 1.25em !important;
+    line-height: 1.3 !important;
+    display: inline-block;
+    white-space: normal !important;
+  }
+
+  /* 召喚時などの大きな文字 */
   .big-text-mobile {
     font-size: 1.2em !important; 
     line-height: 1.4 !important;
@@ -185,7 +202,9 @@ input#barcodeInput {
   .name-text-mobile {
     font-size: 1.4em !important;
   }
-}
+} /* ← ここでスマホ用設定（@media）を正しく閉じます */
+
+/* 以下は全画面共通設定 */
 .skillBtn{margin:10px;padding:15px 25px;font-size:20px;border-radius:10px;}
 button{font-size:20px;padding:15px 25px;margin:5px;border-radius:10px; cursor: pointer;}
 input{font-size:18px;padding:10px;margin:5px;border-radius:10px;}
@@ -742,90 +761,42 @@ function useSkill(i){
   let msg = `<span ${bigStyle}>${name} は ${s.name} を使った</span>`;
 
   if(s.name==="奥義" && s.used){
-  // 他のメッセージと合わせたスタイル定義を追加
-  const warnStyle = "class='mobile-text' style='color:#ffffff; font-size:1.5em; font-weight:bold; text-shadow:2px 2px 4px black;'";
-  
-  // スタイルを適用
-  showEffect(`<span ${warnStyle}>奥義は１回しか使えない ！！</span>`, () => {
-    waitingForCPU = false; 
-    showSkills();
-  });
-  return;
-}
+    showEffect(`<span ${bigStyle}>奥義は１回しか使えない ！！</span>`, () => {
+      waitingForCPU = false; 
+      showSkills();
+    });
+    return;
+  }
   if(s.name==="奥義") s.used = true;
 
+  // ⭐ MISS表示の強制巨大化
   if(s.miss && Math.random() < s.miss){
-  // class='mobile-text' を追加し、サイズを 2.0em に合わせる
-  msg += `<br><span class='mobile-text' style='color:#4d94ff; font-size:2.3em; font-weight:bold; text-shadow:1px 1px 2px black;'>Miss ！！</span>`;
-  showEffect(msg, ()=>{ waitingForCPU = false; nextTurn(); });
-  return;
-}
-
-  if(s.instant && Math.random() < s.instant){
-    d.hp = 0; msg += "<br><span style='color:purple; font-weight:bold;'>即死 ！！</span>";
+    msg += `<br><span style="display:block !important; font-size:50px !important; color:#4d94ff; font-weight:900; text-shadow:4px 4px 0#000; margin:20px 0; line-height:1;">MISS !!</span>`;
+    showEffect(msg, ()=>{ waitingForCPU = false; nextTurn(); });
+    return;
   }
 
-  let statusChanges = [];
-
+  // 固定ダメージ等の処理
   if (s.fixedDmg) {
-        let dmg = s.fixedDmg;
-        d.hp = Math.max(0, d.hp - dmg);
-        msg += `<br><span ${bigStyle} style='color:#ff4d4d;'>固定 ${dmg} ダメージ ！！</span>`;
-    }
-
-   if (s.selfStatus && Math.random() < (s.selfRate || 1)) {
-        a.status = s.selfStatus;
-        let stName = { insane: "発狂" };
-        msg += `<br><span ${bigStyle} style='color:red;'>${name} は ${stName[a.status]} した ！！</span>`;
-    }
-
-  if(s.heal){
-    let heal = Math.floor(a.maxHp * (0.07 + Math.random() * 0.05));
-    a.hp = Math.min(a.maxHp, a.hp + heal);
-    a.tempDef = Math.floor((a.tempDef || a.def) * 1.1);
-    statusChanges.push(`<span ${bigStyle}>HPが ${heal} 回復 ！！</span>`);
+    d.hp = Math.max(0, d.hp - s.fixedDmg);
+    msg += `<br><span ${bigStyle} style='color:#ff4d4d;'>固定 ${s.fixedDmg} ダメージ ！！</span>`;
   }
 
-  if(s.buffAtk) {
-    a.tempAtk = Math.floor((a.tempAtk || a.atk) * s.buffAtk);
-    statusChanges.push(`<span ${bigStyle}>攻撃力が上がった ！！</span>`);
-  }
-  if(s.buffDef) {
-    a.tempDef = Math.floor((a.tempDef || a.def) * s.buffDef);
-    statusChanges.push(`<span ${bigStyle}>防御力が上がった ！！</span>`);
-  }
-  if(s.debuffAtk) {
-    d.tempAtk = Math.floor((d.tempAtk || d.atk) * s.debuffAtk);
-    statusChanges.push(`<span ${bigStyle}>相手の攻撃力を下げた ！！</span>`);
-  }
-  if(s.debuffDef) {
-    d.tempDef = Math.floor((d.tempDef || d.def) * s.debuffDef);
-    statusChanges.push(`<span ${bigStyle}>相手の防御力を下げた ！！</span>`);
-  }
-
-  if(statusChanges.length > 0) {
-    msg += "<br>" + statusChanges.join("<br>");
-  }
-
+  // ⭐ HIT/CRITICAL表示の強制巨大化
   if(s.power){
     let crit = Math.random() < 0.05;
     let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
-    let dmg = Math.max(1, Math.floor(base));
-   if(crit){
-  dmg *= 2;
-  msg += `<br><span style='color:#ffff00; font-size:2.5em; font-weight:bold; text-shadow:0 0 8px orange;'>Critical ！！</span>`;
-} else {
-  // font-size を 1.5em から 2.0em にアップ！
-  msg += `<br><span class='mobile-text' style='color:#ff0000; font-size:2.3em; font-weight:bold; text-shadow:2px 2px 4px black;'>Hit ！！</span>`;
-} 
-    d.hp = Math.max(0, d.hp - dmg);
-    msg += `<br><span ${bigStyle}>${dmg} のダメージ ！！</span>`;
-  }
-
-  if(s.status && !d.status && Math.random() < (s.rate || 1)){
-    d.status = s.status;
-    let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
-    msg += `<br><span ${bigStyle}>${enemy} は ${st[d.status]} 状態になった ！！</span>`;
+    let finalDmg = Math.max(1, Math.floor(base));
+    
+    if(crit){
+      finalDmg = Math.floor(finalDmg * 1.5);
+      msg += `<br><span style="display:block !important; font-size:60px !important; color:#ffff00; font-weight:900; text-shadow:4px 4px 0#ffa500; margin:20px 0; line-height:1;">CRITICAL !!</span>`;
+    } else {
+      msg += `<br><span style="display:block !important; font-size:50px !important; color:#ff0000; font-weight:900; text-shadow:4px 4px 0#000; margin:20px 0; line-height:1;">HIT !!</span>`;
+    } 
+    
+    d.hp = Math.max(0, d.hp - finalDmg);
+    msg += `<br><span ${bigStyle}>${finalDmg} のダメージ ！！</span>`;
   }
 
   render();
