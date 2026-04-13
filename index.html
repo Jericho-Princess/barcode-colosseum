@@ -761,7 +761,8 @@ function useSkill(i){
   let msg = `<span ${bigStyle}>${name} は ${s.name} を使った</span>`;
 
   if(s.name==="奥義" && s.used){
-    showEffect(`<span ${bigStyle}>奥義は１回しか使えない ！！</span>`, () => {
+    const warnStyle = "class='mobile-text' style='color:#ffffff; font-size:1.5em; font-weight:bold; text-shadow:2px 2px 4px black;'";
+    showEffect(`<span ${warnStyle}>奥義は１回しか使えない ！！</span>`, () => {
       waitingForCPU = false; 
       showSkills();
     });
@@ -769,34 +770,79 @@ function useSkill(i){
   }
   if(s.name==="奥義") s.used = true;
 
-  // ⭐ MISS表示の強制巨大化
+  // MISS判定
   if(s.miss && Math.random() < s.miss){
-    msg += `<br><span style="display:block !important; font-size:50px !important; color:#4d94ff; font-weight:900; text-shadow:4px 4px 0#000; margin:20px 0; line-height:1;">MISS !!</span>`;
+    msg += `<br><span class='mobile-text' style='color:#4d94ff; font-size:2.0em; font-weight:bold; text-shadow:1px 1px 2px black;'>MISS ！！</span>`;
     showEffect(msg, ()=>{ waitingForCPU = false; nextTurn(); });
     return;
   }
 
-  // 固定ダメージ等の処理
+  // 即死判定
+  if(s.instant && Math.random() < s.instant){
+    d.hp = 0; 
+    msg += "<br><span style='color:purple; font-weight:bold; font-size:1.5em;'>即死 ！！</span>";
+  }
+
+  // 固定ダメージ
   if (s.fixedDmg) {
     d.hp = Math.max(0, d.hp - s.fixedDmg);
     msg += `<br><span ${bigStyle} style='color:#ff4d4d;'>固定 ${s.fixedDmg} ダメージ ！！</span>`;
   }
 
-  // ⭐ HIT/CRITICAL表示の強制巨大化
+  // ⭐【修正点】バフ・デバフ・回復メッセージの即時追加
+  if(s.heal){
+    let heal = Math.floor(a.maxHp * (0.07 + Math.random() * 0.05));
+    a.hp = Math.min(a.maxHp, a.hp + heal);
+    msg += `<br><span ${bigStyle}>HPが ${heal} 回復 ！！</span>`;
+  }
+  if(s.buffAtk) {
+    a.tempAtk = Math.floor((a.tempAtk || a.atk) * s.buffAtk);
+    msg += `<br><span ${bigStyle}>攻撃力が上がった ！！</span>`;
+  }
+  if(s.buffDef) {
+    a.tempDef = Math.floor((a.tempDef || a.def) * s.buffDef);
+    msg += `<br><span ${bigStyle}>防御力が上がった ！！</span>`;
+  }
+  if(s.debuffAtk) {
+    d.tempAtk = Math.floor((d.tempAtk || d.atk) * s.debuffAtk);
+    msg += `<br><span ${bigStyle}>相手の攻撃力を下げた ！！</span>`;
+  }
+  if(s.debuffDef) {
+    d.tempDef = Math.floor((d.tempDef || d.def) * s.debuffDef);
+    msg += `<br><span ${bigStyle}>相手の防御力を下げた ！！</span>`;
+  }
+
+  // 自分への状態異常（発狂など）
+  if (s.selfStatus && !a.status && Math.random() < (s.selfRate || 1)) {
+    a.status = s.selfStatus;
+    let stName = { insane: "発狂" };
+    msg += `<br><span ${bigStyle} style='color:red;'>${name} は ${stName[a.status] || "異常"} した ！！</span>`;
+  }
+
+  // 通常ダメージ計算
   if(s.power){
     let crit = Math.random() < 0.05;
     let base = ((a.tempAtk || a.atk) - (d.tempDef || d.def)/2) * s.power;
-    let finalDmg = Math.max(1, Math.floor(base));
+    let dmg = Math.max(1, Math.floor(base));
     
     if(crit){
-      finalDmg = Math.floor(finalDmg * 1.5);
-      msg += `<br><span style="display:block !important; font-size:60px !important; color:#ffff00; font-weight:900; text-shadow:4px 4px 0#ffa500; margin:20px 0; line-height:1;">CRITICAL !!</span>`;
+      dmg *= 2;
+      msg += `<br><span style='display:block !important; color:#ffff00; font-size:2.2em; font-weight:bold; text-shadow:0 0 8px orange; margin:0 !important; line-height:0.8;'>CRITICAL ！！</span>`;
     } else {
-      msg += `<br><span style="display:block !important; font-size:50px !important; color:#ff0000; font-weight:900; text-shadow:4px 4px 0#000; margin:20px 0; line-height:1;">HIT !!</span>`;
+      msg += `<br><span class='mobile-text' style='display:block !important; color:#ff0000; font-size:2.0em; font-weight:bold; text-shadow:2px 2px 4px black; margin:0 !important; line-height:0.8;'>HIT ！！</span>`;
     } 
-    
-    d.hp = Math.max(0, d.hp - finalDmg);
-    msg += `<span ${bigStyle}>${finalDmg} のダメージ ！！</span>`;
+    d.hp = Math.max(0, d.hp - dmg);
+    msg += `<span ${bigStyle}>${dmg} のダメージ ！！</span>`;
+  }
+
+  // 相手への状態異常付与（上書き禁止ルール維持）
+  if(s.status && !d.status){
+    let successRate = (s.rate !== undefined) ? s.rate : 1.0;
+    if(Math.random() < successRate){
+      d.status = s.status;
+      let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
+      msg += `<br><span ${bigStyle} style="color:#00ff00;">${enemy} は ${st[d.status]} 状態になった ！！</span>`;
+    }
   }
 
   render();
