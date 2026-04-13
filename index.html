@@ -442,7 +442,7 @@ function useSkill(i){
 
   // 🔥 ミス判定 (文字を強調)
   if(s.miss && Math.random() < s.miss){
-    msg += "<br><br><span style='color:#ff4d4d; font-size:1.5em; font-weight:bold;'>Miss ！！</span>";
+    msg += "<br><span style='color:#4d94ff; font-size:1.3em; font-weight:bold; text-shadow:1px 1px 2px black;'>Miss ！！</span>";
     render();
 
     showEffect(msg, ()=>{
@@ -484,13 +484,15 @@ function useSkill(i){
 
     if(crit){
       dmg *= 2;
-      msg += "<br><br><span style='color:gold; font-size:1.5em; font-weight:bold;'>Critical ！！</span>";
+      // Critical: 黄色（金）で大きく目立たせる
+      msg += "<br><span style='color:#ffff00; font-size:1.6em; font-weight:bold; text-shadow:0 0 8px orange;'>Critical ！！</span>";
     } else {
-      msg += "<br><br><span style='font-size:1.2em; font-weight:bold;'>Hit ！！</span>";
+      // Hit: 赤色で少し目立たせる
+      msg += "<br><span style='color:#ff4d4d; font-size:1.3em; font-weight:bold; text-shadow:1px 1px 2px black;'>Hit ！！</span>";
     }
 
     d.hp = Math.max(0, d.hp - dmg);
-    msg += "<br>" + dmg + " のダメージ";
+    msg += "<br><span style='font-size:1.1em;'>" + dmg + " のダメージ ！！</span>";
   }
 
   // 🔥 状態異常
@@ -531,21 +533,38 @@ function nextTurn(){
   let c = characters[current];
   let name = current==0 ? player1NameVal : player2NameVal;
 
+  // 🔥 状態異常ダメージの処理
   if(c.status==="poison" || c.status==="weaken" || c.status==="irradiate"){
     let dmgRate = c.status==="irradiate" ? 0.03 : 0.04;
     let dmg = Math.floor(c.maxHp * dmgRate);
     c.hp = Math.max(0, c.hp - dmg);
-    if(c.status==="weaken"){ c.tempAtk = (c.tempAtk || c.atk) * 0.95; c.tempDef = (c.tempDef || c.def) * 0.95; }
-    if(c.status==="irradiate") c.tempDef = (c.tempDef || c.def) * 0.8;
+    
+    // メッセージの出し分け
+    let statusMsg = "";
+    if(c.status === "poison") statusMsg = name + " は猛毒に侵されている ！！";
+    if(c.status === "weaken") {
+      statusMsg = name + " は衰弱し、力が抜けていく ！！";
+      c.tempAtk = (c.tempAtk || c.atk) * 0.95; 
+      c.tempDef = (c.tempDef || c.def) * 0.95;
+    }
+    if(c.status === "irradiate") {
+      statusMsg = name + " は被曝している ！！";
+      c.tempDef = (c.tempDef || c.def) * 0.8;
+    }
+
     render();
-    showEffect(name + " は状態異常ダメージ !!", ()=>{
+
+    // 表示：状態異常名 ＋ ダメージ量
+    showEffect(statusMsg + "<br><span style='color:#ff4d4d;'>" + dmg + " ダメージ ！！</span>", ()=>{
       if(c.hp <= 0) showWin(current==0 ? player2NameVal : player1NameVal);
       else proceedTurn();
     });
     return;
   }
+  
+  // 麻痺の判定
   if(c.status==="paralyze"){
-    showEffect(name + " は麻痺で動けない", ()=>{ c.status = null; nextTurn(); });
+    showEffect(name + " は麻痺で体が動かない ！！", ()=>{ c.status = null; nextTurn(); });
     return;
   }
   setTimeout(proceedTurn, 50);
