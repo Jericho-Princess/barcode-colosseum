@@ -841,7 +841,7 @@ function useSkill(i){
     if(Math.random() < successRate){
       d.status = s.status;
       let st = { paralyze:"麻痺", poison:"猛毒", weaken:"衰弱", irradiate:"被曝" };
-      msg += `<br><span ${bigStyle} style="color:#00ff00;">${enemy} は ${st[d.status]} 状態になった ！！</span>`;
+      msg += `<br><span ${bigStyle} style="color:#00ff00;">${st[d.status]} 状態になった ！！</span>`;
     }
   }
 
@@ -874,7 +874,7 @@ function nextTurn() {
 
   // 1. 麻痺判定（動けない場合はここで終了）
   if (c.status === "paralyze" || c.status === "paralyzed") {
-    showEffect(`<span ${bigStyle}>${name} は麻痺で体が動かない ！！</span>`, () => {
+    showEffect(`<span ${bigStyle}>${name} は麻痺で動けない ！！</span>`, () => {
       c.status = null;
       nextTurn();
     });
